@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5b389fbc-693a-4937-b1ab-a4862ad868fc" name="Default Changelist" comment="" />
+    <list default="true" id="5b389fbc-693a-4937-b1ab-a4862ad868fc" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,6 +24,7 @@
     <option name="indexEntireGoPath" value="false" />
   </component>
   <component name="ProjectId" id="2KrW4guPsCR64xSYjhNMT4Qe1EU" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -29,6 +32,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="GO_FMT" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
@@ -61,6 +65,10 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="v1" />
+    <option name="LAST_COMMIT_MESSAGE" value="v1" />
+  </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
   </component>
@@ -77,6 +85,10 @@
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
     <state x="769" y="802" key="#com.intellij.fileTypes.FileTypeChooser/0.0.3072.1688@0.0.3072.1688" timestamp="1674745418755" />
+    <state x="837" y="440" key="CommitChangelistDialog2" timestamp="1674746582821">
+      <screen x="0" y="0" width="3072" height="1688" />
+    </state>
+    <state x="837" y="440" key="CommitChangelistDialog2/0.0.3072.1688@0.0.3072.1688" timestamp="1674746582821" />
     <state x="1255" y="730" key="FileChooserDialogImpl" timestamp="1674746502352">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
@@ -97,5 +109,9 @@
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
     <state width="1622" height="332" key="GridCell.Tab.0.right/0.0.3072.1688@0.0.3072.1688" timestamp="1674746358512" />
+    <state x="805" y="567" key="Vcs.Push.Dialog.v2" timestamp="1674746651673">
+      <screen x="0" y="0" width="3072" height="1688" />
+    </state>
+    <state x="805" y="567" key="Vcs.Push.Dialog.v2/0.0.3072.1688@0.0.3072.1688" timestamp="1674746651673" />
   </component>
 </project>
