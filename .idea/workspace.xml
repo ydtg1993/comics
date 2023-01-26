@@ -2,7 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5b389fbc-693a-4937-b1ab-a4862ad868fc" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/chromedriver" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/chromedriver.exe" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/robot/action.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/robot/robot.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,11 +45,12 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../robot" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\project\comics" />
+      <recent name="E:\project\comics\robot" />
       <recent name="E:\project\comics\model" />
     </key>
   </component>
@@ -85,33 +94,60 @@
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
     <state x="769" y="802" key="#com.intellij.fileTypes.FileTypeChooser/0.0.3072.1688@0.0.3072.1688" timestamp="1674745418755" />
-    <state x="837" y="440" key="CommitChangelistDialog2" timestamp="1674746582821">
+    <state x="837" y="440" key="CommitChangelistDialog2" timestamp="1674750349606">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
-    <state x="837" y="440" key="CommitChangelistDialog2/0.0.3072.1688@0.0.3072.1688" timestamp="1674746582821" />
-    <state x="1255" y="730" key="FileChooserDialogImpl" timestamp="1674746502352">
+    <state x="837" y="440" key="CommitChangelistDialog2/0.0.3072.1688@0.0.3072.1688" timestamp="1674750349606" />
+    <state x="1255" y="730" key="FileChooserDialogImpl" timestamp="1674749764893">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
-    <state x="1255" y="730" key="FileChooserDialogImpl/0.0.3072.1688@0.0.3072.1688" timestamp="1674746502352" />
-    <state width="1622" height="332" key="GridCell.Tab.0.bottom" timestamp="1674746358512">
+    <state x="1255" y="730" key="FileChooserDialogImpl/0.0.3072.1688@0.0.3072.1688" timestamp="1674749764893" />
+    <state width="1622" height="260" key="GridCell.Tab.0.bottom" timestamp="1674749748345">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
-    <state width="1622" height="332" key="GridCell.Tab.0.bottom/0.0.3072.1688@0.0.3072.1688" timestamp="1674746358512" />
-    <state width="1622" height="332" key="GridCell.Tab.0.center" timestamp="1674746358512">
+    <state width="1622" height="260" key="GridCell.Tab.0.bottom/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
+    <state width="1622" height="260" key="GridCell.Tab.0.center" timestamp="1674749748345">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
-    <state width="1622" height="332" key="GridCell.Tab.0.center/0.0.3072.1688@0.0.3072.1688" timestamp="1674746358512" />
-    <state width="1622" height="332" key="GridCell.Tab.0.left" timestamp="1674746358512">
+    <state width="1622" height="260" key="GridCell.Tab.0.center/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
+    <state width="1622" height="260" key="GridCell.Tab.0.left" timestamp="1674749748345">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
-    <state width="1622" height="332" key="GridCell.Tab.0.left/0.0.3072.1688@0.0.3072.1688" timestamp="1674746358512" />
-    <state width="1622" height="332" key="GridCell.Tab.0.right" timestamp="1674746358512">
+    <state width="1622" height="260" key="GridCell.Tab.0.left/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
+    <state width="1622" height="260" key="GridCell.Tab.0.right" timestamp="1674749748345">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
-    <state width="1622" height="332" key="GridCell.Tab.0.right/0.0.3072.1688@0.0.3072.1688" timestamp="1674746358512" />
-    <state x="805" y="567" key="Vcs.Push.Dialog.v2" timestamp="1674746651673">
+    <state width="1622" height="260" key="GridCell.Tab.0.right/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
+    <state width="1622" height="292" key="GridCell.Tab.1.bottom" timestamp="1674748841945">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
-    <state x="805" y="567" key="Vcs.Push.Dialog.v2/0.0.3072.1688@0.0.3072.1688" timestamp="1674746651673" />
+    <state width="1622" height="292" key="GridCell.Tab.1.bottom/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841945" />
+    <state width="1622" height="292" key="GridCell.Tab.1.center" timestamp="1674748841944">
+      <screen x="0" y="0" width="3072" height="1688" />
+    </state>
+    <state width="1622" height="292" key="GridCell.Tab.1.center/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841944" />
+    <state width="1622" height="292" key="GridCell.Tab.1.left" timestamp="1674748841944">
+      <screen x="0" y="0" width="3072" height="1688" />
+    </state>
+    <state width="1622" height="292" key="GridCell.Tab.1.left/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841944" />
+    <state width="1622" height="292" key="GridCell.Tab.1.right" timestamp="1674748841945">
+      <screen x="0" y="0" width="3072" height="1688" />
+    </state>
+    <state width="1622" height="292" key="GridCell.Tab.1.right/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841945" />
+    <state x="805" y="567" key="Vcs.Push.Dialog.v2" timestamp="1674746820709">
+      <screen x="0" y="0" width="3072" height="1688" />
+    </state>
+    <state x="805" y="567" key="Vcs.Push.Dialog.v2/0.0.3072.1688@0.0.3072.1688" timestamp="1674746820709" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/robot/robot.go</url>
+          <line>19</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
