@@ -2,12 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5b389fbc-693a-4937-b1ab-a4862ad868fc" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/chromedriver" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/chromedriver.exe" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/robot/action.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/robot/robot.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/files.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/http_request.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/include.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/system_other.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/system_windows.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/unitl.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rd/action.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rd/init.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controller/comic_paw.go" beforeDir="false" afterPath="$PROJECT_DIR$/controller/comic_paw.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
@@ -24,7 +29,7 @@
       </list>
     </option>
   </component>
-  <component name="GOROOT" path="C:/Program Files (x86)/Go" />
+  <component name="GOROOT" path="E:\Go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -42,13 +47,16 @@
     <property name="DefaultGoTemplateProperty" value="Go File" />
     <property name="GO_FMT" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.import.settings.migrated" value="true" />
+    <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../robot" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\hdb\comics" />
       <recent name="E:\project\comics" />
       <recent name="E:\project\comics\robot" />
       <recent name="E:\project\comics\model" />
@@ -57,6 +65,7 @@
   <component name="RunManager">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="comics" />
+      <working_directory value="$PROJECT_DIR$/" />
       <go_parameters value="-i" />
       <kind value="FILE" />
       <filePath value="$PROJECT_DIR$/main.go" />
@@ -98,42 +107,51 @@
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
     <state x="837" y="440" key="CommitChangelistDialog2/0.0.3072.1688@0.0.3072.1688" timestamp="1674750349606" />
-    <state x="1255" y="730" key="FileChooserDialogImpl" timestamp="1674749764893">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state x="784" y="450" key="FileChooserDialogImpl" timestamp="1674782420947">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="1255" y="730" key="FileChooserDialogImpl/0.0.3072.1688@0.0.3072.1688" timestamp="1674749764893" />
-    <state width="1622" height="260" key="GridCell.Tab.0.bottom" timestamp="1674749748345">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state x="784" y="450" key="FileChooserDialogImpl/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674782420947" />
+    <state width="1340" height="203" key="GridCell.Tab.0.bottom" timestamp="1674783090736">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="260" key="GridCell.Tab.0.bottom/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
-    <state width="1622" height="260" key="GridCell.Tab.0.center" timestamp="1674749748345">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state width="1340" height="203" key="GridCell.Tab.0.bottom/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674783090736" />
+    <state width="1340" height="203" key="GridCell.Tab.0.center" timestamp="1674783090736">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="260" key="GridCell.Tab.0.center/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
-    <state width="1622" height="260" key="GridCell.Tab.0.left" timestamp="1674749748345">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state width="1340" height="203" key="GridCell.Tab.0.center/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674783090736" />
+    <state width="1340" height="203" key="GridCell.Tab.0.left" timestamp="1674783090736">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="260" key="GridCell.Tab.0.left/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
-    <state width="1622" height="260" key="GridCell.Tab.0.right" timestamp="1674749748345">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state width="1340" height="203" key="GridCell.Tab.0.left/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674783090736" />
+    <state width="1340" height="203" key="GridCell.Tab.0.right" timestamp="1674783090736">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="260" key="GridCell.Tab.0.right/0.0.3072.1688@0.0.3072.1688" timestamp="1674749748345" />
-    <state width="1622" height="292" key="GridCell.Tab.1.bottom" timestamp="1674748841945">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state width="1340" height="203" key="GridCell.Tab.0.right/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674783090736" />
+    <state width="1340" height="252" key="GridCell.Tab.1.bottom" timestamp="1674781126850">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="292" key="GridCell.Tab.1.bottom/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841945" />
-    <state width="1622" height="292" key="GridCell.Tab.1.center" timestamp="1674748841944">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state width="1340" height="252" key="GridCell.Tab.1.bottom/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674781126850" />
+    <state width="1340" height="252" key="GridCell.Tab.1.center" timestamp="1674781126850">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="292" key="GridCell.Tab.1.center/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841944" />
-    <state width="1622" height="292" key="GridCell.Tab.1.left" timestamp="1674748841944">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state width="1340" height="252" key="GridCell.Tab.1.center/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674781126850" />
+    <state width="1340" height="252" key="GridCell.Tab.1.left" timestamp="1674781126850">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="292" key="GridCell.Tab.1.left/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841944" />
-    <state width="1622" height="292" key="GridCell.Tab.1.right" timestamp="1674748841945">
-      <screen x="0" y="0" width="3072" height="1688" />
+    <state width="1340" height="252" key="GridCell.Tab.1.left/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674781126850" />
+    <state width="1340" height="252" key="GridCell.Tab.1.right" timestamp="1674781126850">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="1622" height="292" key="GridCell.Tab.1.right/0.0.3072.1688@0.0.3072.1688" timestamp="1674748841945" />
+    <state width="1340" height="252" key="GridCell.Tab.1.right/1920.0.1600.860/0.0.1920.1040@0.0.1920.1040" timestamp="1674781126850" />
     <state x="805" y="567" key="Vcs.Push.Dialog.v2" timestamp="1674746820709">
       <screen x="0" y="0" width="3072" height="1688" />
     </state>
@@ -146,6 +164,11 @@
           <url>file://$PROJECT_DIR$/robot/robot.go</url>
           <line>19</line>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/model/gorm.go</url>
+          <line>17</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
