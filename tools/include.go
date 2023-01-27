@@ -1,4 +1,4 @@
-package common
+package tools
 
 import (
 	"bufio"
@@ -70,32 +70,6 @@ func UnknowToString(unknow interface{}) string {
 		result = ""
 	}
 	return result
-}
-
-/**
-* 计算数组切片中的最大值
- */
-func MaxFunc(l []float64) (max float64) {
-	max = l[0]
-	for _, v := range l {
-		if v > max {
-			max = v
-		}
-	}
-	return max
-}
-
-/**
-* 计算数组切片中的最小值
- */
-func MinFunc(l []float64) (min float64) {
-	min = l[0]
-	for _, v := range l {
-		if v < min {
-			min = v
-		}
-	}
-	return min
 }
 
 /**

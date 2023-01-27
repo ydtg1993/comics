@@ -6,21 +6,21 @@ import (
 )
 
 type Comic struct {
-	Id        int    `json:"id" bson:"id" gorm:"primarykey"`
-	Source    string `json:"source" bson:"source"`
-	SourceId  int    `json:"source_id" bson:"source_id"`
-	SourceUri string `json:"source_uri" bson:"source_uri"`
-	Cover     int    `json:"cover" bson:"cover"`
-	Title     string `json:"title" bson:"title"`
-	CreatedAt string `json:"created_at" bson:"created_at"`
-	UpdatedAt string `json:"updated_at" bson:"updated_at"`
+	Id        int    `json:"id" gorm:"primarykey"`
+	Source    string `json:"source"`
+	SourceId  int    `json:"source_id"`
+	SourceUri string `json:"source_uri"`
+	Cover     int    `json:"cover"`
+	Title     string `json:"title"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 /**
 指定表名
 */
 func (Comic) TableName() string {
-	return "comic"
+	return "source_comic"
 }
 
 func (d *Comic) Create() (err error) {

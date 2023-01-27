@@ -1,7 +1,7 @@
 //go:build !windows
 // +build !windows
 
-package common
+package tools
 
 import (
 	"syscall"
