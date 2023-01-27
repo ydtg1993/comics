@@ -1,16 +1,17 @@
 package model
 
 import (
+	"comics/global/orm"
 	"gorm.io/gorm"
 	"time"
 )
 
-type Comic struct {
+type SourceComic struct {
 	Id        int    `json:"id" gorm:"primarykey"`
-	Source    string `json:"source"`
+	Source    int    `json:"source"`
 	SourceId  int    `json:"source_id"`
 	SourceUri string `json:"source_uri"`
-	Cover     int    `json:"cover"`
+	Cover     string `json:"cover"`
 	Title     string `json:"title"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
@@ -19,22 +20,22 @@ type Comic struct {
 /**
 指定表名
 */
-func (Comic) TableName() string {
+func (SourceComic) TableName() string {
 	return "source_comic"
 }
 
-func (d *Comic) Create() (err error) {
-	err = GetGormDb().Create(&d).Error
+func (d *SourceComic) Create() (err error) {
+	err = orm.Eloquent.Create(&d).Error
 	return
 }
 
-func (ma *Comic) BeforeCreate(tx *gorm.DB) (err error) {
+func (ma *SourceComic) BeforeCreate(tx *gorm.DB) (err error) {
 	ma.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 	return
 }
 
-func (ma *Comic) BeforeUpdate(tx *gorm.DB) (err error) {
+func (ma *SourceComic) BeforeUpdate(tx *gorm.DB) (err error) {
 	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 	return
 }

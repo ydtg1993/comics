@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"comics/global/orm"
+	"comics/model"
 	"comics/tools"
 	"comics/tools/config"
 	"fmt"
@@ -96,9 +98,16 @@ func paw(tagId, regionId, payId, stateId, last int) {
 
 	list := gjson.Get(content, "hits.topicMessageList")
 	list.ForEach(func(key, value gjson.Result) bool {
-		id := value.Get("id")
-		topic_id := value.Get("topic_id")
-		fmt.Println(id, topic_id)
+		id, _ := strconv.Atoi(value.Get("id").String())
+
+		sourceComic := new(model.SourceComic)
+		sourceComic.Source = 1
+		sourceComic.SourceId = id
+		sourceComic.Cover = value.Get("cover_image_url").String()
+		sourceComic.SourceUri = "web/topic/" + value.Get("id").String()
+		sourceComic.Title = value.Get("title").String()
+
+		orm.Eloquent.Where("source = ? and source_id = ?", 1, id).FirstOrCreate(&sourceComic)
 		return true
 	})
 }

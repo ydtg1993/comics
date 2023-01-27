@@ -1,11 +1,10 @@
 package model
 
 import (
-	"gorm.io/gorm"
-	"time"
+	"comics/global/orm"
 )
 
-type ComicExt struct {
+type SourceComicExt struct {
 	Id           int    `json:"id" gorm:"primarykey"`
 	ComicId      string `json:"comic_id"`
 	Author       string `json:"Author"`
@@ -21,22 +20,11 @@ type ComicExt struct {
 /**
 指定表名
 */
-func (ComicExt) TableName() string {
+func (SourceComicExt) TableName() string {
 	return "source_comic_ext"
 }
 
-func (d *ComicExt) Create() (err error) {
-	err = GetGormDb().Create(&d).Error
-	return
-}
-
-func (ma *ComicExt) BeforeCreate(tx *gorm.DB) (err error) {
-	ma.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-	return
-}
-
-func (ma *ComicExt) BeforeUpdate(tx *gorm.DB) (err error) {
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+func (d *SourceComicExt) Create() (err error) {
+	err = orm.Eloquent.Create(&d).Error
 	return
 }
