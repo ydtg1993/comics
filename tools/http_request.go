@@ -63,47 +63,6 @@ func DownFileFor5(sUrl, sPath, sName string) (string, bool) {
 }
 
 /**
-*  简单版http请求，适用于没有特别要求的
-* httpUrl	请求的网址
-* method	网络请求方式，一般为POST或者GET
-* sParam	需要传递的参数
-* mHeader	http的头部
- */
-func httpRequest(httpUrl, method, sParam string, mHeader map[string]string) (string, error) {
-	client := &http.Client{}
-
-	req, er := http.NewRequest(method, httpUrl, bytes.NewReader([]byte(sParam)))
-	if er != nil {
-		req, er = http.NewRequest(method, httpUrl, strings.NewReader(sParam))
-		if er != nil {
-			//两次连接都失败了，需要返回一个空
-			return "", er
-		}
-	}
-	req.Close = true
-
-	defer req.Body.Close()
-
-	for key, val := range mHeader {
-		req.Header.Add(key, val)
-	}
-
-	var body []byte
-	resp, err := client.Do(req)
-	if err == nil {
-		defer resp.Body.Close()
-
-		if resp.StatusCode != 200 {
-			httpRequest(req.RequestURI, req.Method, "", mHeader)
-		}
-
-		body, _ = ioutil.ReadAll(resp.Body)
-	}
-
-	return string(body), err
-}
-
-/**
 * 复杂版http，请求携带cookie
 * httpUrl	请求的网址
 * method	网络请求方式，一般为POST或者GET

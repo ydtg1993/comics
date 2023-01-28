@@ -2,13 +2,13 @@ package main
 
 import (
 	"comics/controller"
-	_ "comics/rd"
 	"comics/tools/config"
 	"comics/tools/database"
 	"comics/tools/log"
 	"comics/tools/rd"
 	"github.com/beego/beego/v2/core/logs"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	TaskComic()
 
-	//go TaskChapter()
+	//TaskChapter()
 
 	//go TaskImage()
 
@@ -61,24 +61,28 @@ func TaskComic() {
 	t := time.NewTicker(time.Minute * 5)
 	defer t.Stop()
 
-	//启动更新数据到es
 	controller.ComicPaw()
 
 	for {
 		<-t.C
-		controller.ComicPaw()
+		controller.ComicUpdate()
 	}
 }
 
 func TaskChapter() {
-	t := time.NewTicker(time.Minute * 5)
+	t := time.NewTicker(time.Second * 5)
 	defer t.Stop()
-
-	controller.ChapterPaw()
 
 	for {
 		<-t.C
-		controller.ChapterPaw()
+		wg := sync.WaitGroup{}
+		wg.Add(10)
+		for i := 0; i < 2; i++ {
+			go func(i int) {
+				controller.ChapterPaw()
+				wg.Done()
+			}(i)
+		}
 	}
 }
 

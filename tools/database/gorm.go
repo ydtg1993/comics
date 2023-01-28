@@ -37,9 +37,6 @@ func (m MysqlManage) Setup() (err error) {
 		config.Spe.WriteTimeout,
 	)
 
-	fmt.Println("master:", db1Dsn)
-	fmt.Println("slave:", db2Dsn)
-
 	newLogger := logger.New(Writer{}, logger.Config{
 		SlowThreshold:             1 * time.Second,
 		Colorful:                  false,

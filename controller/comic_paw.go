@@ -3,16 +3,14 @@ package controller
 import (
 	"comics/global/orm"
 	"comics/model"
-	"comics/tools"
 	"comics/tools/config"
+	"comics/tools/rd"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/tidwall/gjson"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func ComicPaw() {
@@ -51,22 +49,16 @@ func ComicUpdate() {
 }
 
 func category(tagId, regionId, payId, stateId int) {
-	url := fmt.Sprintf(os.Getenv("SOURCE_URL")+"/tag/%d?region=%d&pays=%d&state=%d&sort=1&page=1",
+	url := fmt.Sprintf(config.Spe.SourceUrl+"/tag/%d?region=%d&pays=%d&state=%d&sort=1&page=1",
 		tagId, regionId, payId, stateId)
-	header := map[string]string{
-		"User-Agent": config.Spe.UserAgent,
-		"Referer":    config.Spe.SourceUrl}
-	content, _, code := tools.HttpRequestByHeaderFor5(url, "GET", "", header)
-	if code != 200 {
-		logs.Error("无法抓取目标页:" + url)
+	content, err := requestHtml(url, 3)
+	if err != nil {
 		return
 	}
 
-	t := time.NewTicker(time.Second * time.Duration(5))
-	<-t.C
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
 	if err != nil {
-		logs.Error("无法抓取目标页Dom:" + url)
+		logs.Error("无法抓取分类列表页Dom:" + url)
 		return
 	}
 
@@ -82,21 +74,14 @@ func category(tagId, regionId, payId, stateId int) {
 }
 
 func paw(tagId, regionId, payId, stateId, last int) {
-	header := map[string]string{
-		"User-Agent": config.Spe.UserAgent,
-		"Referer":    config.Spe.SourceUrl}
-	url := fmt.Sprintf(os.Getenv("SOURCE_URL")+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=1&page=%d&size=48",
+	url := fmt.Sprintf(config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=1&page=%d&size=48",
 		tagId, regionId, payId, stateId, last)
-	content, _, code := tools.HttpRequestByHeaderFor5(url, "GET", "", header)
-	if code != 200 {
-		logs.Error("无法抓取目标页 分页:" + url)
+	content, err := requestApi(url, "GET", "", 3)
+	if err != nil {
 		return
 	}
 
-	t := time.NewTicker(time.Second * time.Duration(5))
-	<-t.C
-
-	list := gjson.Get(content, "hits.topicMessageList")
+	list := content.Get("hits.topicMessageList")
 	list.ForEach(func(key, value gjson.Result) bool {
 		id, _ := strconv.Atoi(value.Get("id").String())
 
@@ -108,6 +93,27 @@ func paw(tagId, regionId, payId, stateId, last int) {
 		sourceComic.Title = value.Get("title").String()
 
 		orm.Eloquent.Where("source = ? and source_id = ?", 1, id).FirstOrCreate(&sourceComic)
+
+		sourceComicExt := new(model.SourceComicExt)
+		sourceComicExt.ComicId = id
+		var Category []string
+		for _, v := range value.Get("category").Array() {
+			Category = append(Category, v.Str)
+		}
+		sourceComicExt.Category = Category
+		sourceComicExt.Author = value.Get("author_name").String()
+		sourceComicExt.LikeCount, _ = strconv.Atoi(value.Get("likes_count").String())
+		sourceComicExt.Popularity, _ = strconv.Atoi(value.Get("popularity").String())
+		sourceComicExt.IsFree = 0
+		sourceComicExt.SourceData = content.String()
+		if value.Get("is_free").Bool() == false {
+			sourceComicExt.IsFree = 1
+		}
+		err := orm.Eloquent.Where("comic_id = ?", id).FirstOrCreate(&sourceComicExt).Error
+		if err != nil {
+			panic(err)
+		}
+		rd.RPush(model.SourceComicTASK, sourceComic.Id)
 		return true
 	})
 }

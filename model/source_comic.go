@@ -17,6 +17,8 @@ type SourceComic struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
+const SourceComicTASK = "source:comic:task"
+
 /**
 指定表名
 */

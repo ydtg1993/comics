@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 	"time"
@@ -60,6 +59,5 @@ var Spe Specification
 
 func (s Specification) SetUp() (err error) {
 	err = envconfig.Process("", &Spe)
-	fmt.Println(Spe)
 	return
 }
