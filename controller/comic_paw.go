@@ -91,25 +91,21 @@ func paw(tagId, regionId, payId, stateId, last int) {
 		sourceComic.Cover = value.Get("cover_image_url").String()
 		sourceComic.SourceUri = "web/topic/" + value.Get("id").String()
 		sourceComic.Title = value.Get("title").String()
-
-		orm.Eloquent.Where("source = ? and source_id = ?", 1, id).FirstOrCreate(&sourceComic)
-
-		sourceComicExt := new(model.SourceComicExt)
-		sourceComicExt.ComicId = id
 		var Category []string
 		for _, v := range value.Get("category").Array() {
 			Category = append(Category, v.Str)
 		}
-		sourceComicExt.Category = Category
-		sourceComicExt.Author = value.Get("author_name").String()
-		sourceComicExt.LikeCount, _ = strconv.Atoi(value.Get("likes_count").String())
-		sourceComicExt.Popularity, _ = strconv.Atoi(value.Get("popularity").String())
-		sourceComicExt.IsFree = 0
-		sourceComicExt.SourceData = content.String()
+		sourceComic.Category = Category
+		sourceComic.Author = value.Get("author_name").String()
+		sourceComic.LikeCount = value.Get("likes_count").String()
+		sourceComic.Popularity = value.Get("popularity").String()
+		sourceComic.IsFree = 0
+		sourceComic.SourceData = value.String()
 		if value.Get("is_free").Bool() == false {
-			sourceComicExt.IsFree = 1
+			sourceComic.IsFree = 1
 		}
-		err := orm.Eloquent.Where("comic_id = ?", id).FirstOrCreate(&sourceComicExt).Error
+
+		err := orm.Eloquent.Where("source = ? and source_id = ?", 1, id).FirstOrCreate(&sourceComic).Error
 		if err != nil {
 			panic(err)
 		}

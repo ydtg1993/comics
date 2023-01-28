@@ -7,14 +7,22 @@ import (
 )
 
 type SourceComic struct {
-	Id        int    `json:"id" gorm:"primarykey"`
-	Source    int    `json:"source"`
-	SourceId  int    `json:"source_id"`
-	SourceUri string `json:"source_uri"`
-	Cover     string `json:"cover"`
-	Title     string `json:"title"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	Id           int      `json:"id" gorm:"primarykey"`
+	Source       int      `json:"source"`
+	SourceId     int      `json:"source_id"`
+	SourceUri    string   `json:"source_uri"`
+	Cover        string   `json:"cover"`
+	Title        string   `json:"title"`
+	Author       string   `json:"Author"`
+	Category     Category `json:"category" gorm:"type:json"`
+	ChapterCount int      `json:"chapter_count"`
+	LikeCount    string   `json:"like_count"`
+	Popularity   string   `json:"popularity"`
+	IsFree       int      `json:"is_free"`
+	Description  string   `json:"description"`
+	SourceData   string   `json:"source_data"`
+	CreatedAt    string   `json:"created_at"`
+	UpdatedAt    string   `json:"updated_at"`
 }
 
 const SourceComicTASK = "source:comic:task"

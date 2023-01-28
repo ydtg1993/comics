@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"comics/tools/config"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -38,7 +39,7 @@ func (Robot *Robot) CatchApi(url string, method string, body io.Reader) []byte {
 	req.Header.Add("Referer", current_url)
 	req.Header.Add("Origin", current_url)
 	req.Header.Add("Host", current_url)
-	req.Header.Add("User-Agent", USER_AGENT)
+	req.Header.Add("User-Agent", config.Spe.UserAgent)
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Cache-Control", "no-cache")
