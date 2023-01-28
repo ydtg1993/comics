@@ -2,9 +2,13 @@ package model
 
 import (
 	"comics/global/orm"
+	"database/sql/driver"
+	"encoding/json"
 	"gorm.io/gorm"
 	"time"
 )
+
+type Category []string
 
 type SourceComic struct {
 	Id           int      `json:"id" gorm:"primarykey"`
@@ -48,4 +52,13 @@ func (ma *SourceComic) BeforeCreate(tx *gorm.DB) (err error) {
 func (ma *SourceComic) BeforeUpdate(tx *gorm.DB) (err error) {
 	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 	return
+}
+
+func (t *Category) Scan(value interface{}) error {
+	bytesValue, _ := value.([]byte)
+	return json.Unmarshal(bytesValue, t)
+}
+
+func (t Category) Value() (driver.Value, error) {
+	return json.Marshal(t)
 }

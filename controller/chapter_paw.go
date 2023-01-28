@@ -4,9 +4,9 @@ import (
 	"comics/global/orm"
 	"comics/model"
 	"comics/robot"
+	"comics/tools"
 	"comics/tools/config"
 	"comics/tools/rd"
-	"fmt"
 	"github.com/tebeka/selenium"
 	"sync"
 	"time"
@@ -15,7 +15,8 @@ import (
 func ChapterPaw(tunnel int) {
 	Rob := robot.Robot{Port: 19993 + tunnel}
 	Rob.Start(config.Spe.SourceUrl)
-
+	defer Rob.Service.Stop()
+	defer Rob.WebDriver.Close()
 	wg := sync.WaitGroup{}
 	taskLimit := 100
 	wg.Add(taskLimit)
@@ -42,31 +43,39 @@ func ChapterPaw(tunnel int) {
 		if err != nil {
 			continue
 		}
-		var itemElement selenium.WebElement
-		for _, itemElement = range listElements {
+
+		for sort, itemElement := range listElements {
 			dom, err := itemElement.FindElement(selenium.ByClassName, "img")
-			var (
-				title = ""
-				img   = ""
-				date  = ""
-				free  = 0
-			)
+			sourceChapter := new(model.SourceChapter)
+			sourceChapter.Source = 1
+			sourceChapter.ComicId = sourceComic.SourceId
+			sourceChapter.Sort = sort
 			if err == nil {
-				title, _ = dom.GetAttribute("alt")
-				img, _ = dom.GetAttribute("src")
+				sourceChapter.Title, _ = dom.GetAttribute("alt")
+				sourceChapter.Cover, _ = dom.GetAttribute("src")
 			}
-			dom, err = itemElement.FindElement(selenium.ByClassName, "date")
+
+			dom, err = itemElement.FindElement(selenium.ByClassName, "title")
 			if err == nil {
-				date, _ = dom.Text()
+				_, err = dom.FindElement(selenium.ByClassName, "lockedIcon")
+				if err != nil { //收费
+					sourceChapter.IsFree = 1
+				}
+				dom, err = dom.FindElement(selenium.ByTagName, "a")
+				if err == nil {
+					sourceChapter.SourceUri, err = dom.GetAttribute("href")
+					if err == nil {
+						sourceChapter.SourceChapterId = tools.FindStringNumber(sourceChapter.SourceUri)
+					}
+				}
 			}
-			_, err = itemElement.FindElement(selenium.ByClassName, "lockedIcon")
-			if err != nil { //收费
-				free = 1
+			if sourceChapter.SourceChapterId > 0 {
+				orm.Eloquent.Where("source = ? and source_id = ? and source_chapter_id = ?",
+					1,
+					sourceComic.SourceId,
+					sourceChapter.SourceChapterId).FirstOrCreate(&sourceChapter)
 			}
-			fmt.Println(title, img, date)
 		}
 	}
 	wg.Wait()
-	Rob.Service.Stop()
-	Rob.WebDriver.Close()
 }

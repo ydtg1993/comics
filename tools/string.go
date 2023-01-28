@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -19,4 +20,19 @@ func GetCurrentTimeStr() string {
 
 func GetCurrentTime() time.Time {
 	return time.Now()
+}
+
+func FindStringNumber(s string) int {
+	pattern := regexp.MustCompile(`\d+`)
+	numberStrings := pattern.FindAllStringSubmatch(s, -1)
+
+	result := ""
+	for _, number := range numberStrings[0] {
+		result += number
+	}
+	res, err := strconv.Atoi(result)
+	if err != nil {
+		return 0
+	}
+	return res
 }
