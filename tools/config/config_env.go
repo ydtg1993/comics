@@ -32,13 +32,14 @@ type Specification struct {
 	RedisPass string `envconfig:"REDIS_PASS"`
 	RedisDb   int    `envconfig:"REDIS_DB"`
 
-	UserAgent   string `envconfig:"USER_AGENT"`
-	SourceUrl   string `envconfig:"SOURCE_URL"`
-	Downpath    string `envconfig:"DOWN_PATH"`
-	Downtimeout int64  `envconfig:"DOWN_TIMEOUT"`
-	Downdomain  string `envconfig:"DOWN_DOMAIN"`
-	Maxthreads  int    `envconfig:"MAX_THREADS"`
-	MapDown     int    `envconfig:"MAP_DOWN"`
+	UserAgent    string `envconfig:"USER_AGENT"`
+	SourceUrl    string `envconfig:"SOURCE_URL"`
+	Downpath     string `envconfig:"DOWN_PATH"`
+	Downtimeout  int64  `envconfig:"DOWN_TIMEOUT"`
+	Downdomain   string `envconfig:"DOWN_DOMAIN"`
+	Maxthreads   int    `envconfig:"MAX_THREADS"`
+	MapDown      int    `envconfig:"MAP_DOWN"`
+	SeleniumPath string `envconfig:"SELENIUM_PATH"`
 
 	Logday   int      `envconfig:"LOG_DAY"`
 	Logpath  string   `envconfig:"LOG_PATH"`

@@ -16,9 +16,9 @@ import (
 func main() {
 	Setup()
 
-	go TaskComic()
+	TaskComic()
 
-	TaskChapter()
+	//TaskChapter()
 
 	//go TaskImage()
 }
@@ -66,9 +66,10 @@ func TaskComic() {
 }
 
 func TaskChapter() {
-	t := time.NewTicker(time.Second * 20)
+	t := time.NewTicker(time.Second * 30)
 	defer t.Stop()
 	for {
+		<-t.C
 		wg := sync.WaitGroup{}
 		wg.Add(config.Spe.Maxthreads)
 		for i := 0; i < config.Spe.Maxthreads; i++ {
@@ -77,7 +78,6 @@ func TaskChapter() {
 				wg.Done()
 			}(i)
 		}
-		<-t.C
 	}
 }
 

@@ -49,10 +49,10 @@ func ChapterPaw() {
 			continue
 		}
 		Rob.WebDriver.Get("https://" + config.Spe.SourceUrl + "/" + sourceComic.SourceUri)
-		t := time.NewTicker(time.Second * 1)
-		<-t.C
 		var arg []interface{}
 		Rob.WebDriver.ExecuteScript("window.scrollBy(0,10000)", arg)
+		t := time.NewTicker(time.Second * 2)
+		<-t.C
 		listElements, err := Rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
 		if err != nil {
 			continue

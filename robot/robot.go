@@ -21,14 +21,28 @@ type Robot struct {
 	State     int
 }
 
-const SELENIUM_PATH = "chromedriver.exe"
-
 func SetUp(num int) {
-	t := time.NewTicker(time.Second * 10)
+	setting := func(lifeTime time.Time) {
+		for {
+			if len(Swarm) >= num {
+				return
+			}
+
+			r := &Robot{
+				Port:     19991 + len(Swarm),
+				Lifetime: lifeTime,
+			}
+			r.Prepare("https://" + config.Spe.SourceUrl)
+			Swarm = append(Swarm, r)
+		}
+	}
+	lifeTime := time.Now().Add(time.Hour * 4)
+	setting(lifeTime)
+
+	t := time.NewTicker(time.Hour * 1)
 	defer t.Stop()
 	for {
 		<-t.C
-		lifeTime := time.Now().Add(time.Minute * 3)
 		activeNum := len(Swarm)
 		if activeNum >= num {
 			if Swarm[0].Lifetime.Second() < time.Now().Second() {
@@ -44,18 +58,7 @@ func SetUp(num int) {
 				sw.Service.Stop()
 			}
 		}
-		for {
-			if len(Swarm) >= num {
-				break
-			}
-
-			r := &Robot{
-				Port:     19991 + len(Swarm),
-				Lifetime: lifeTime,
-			}
-			r.Prepare("https://" + config.Spe.SourceUrl)
-			Swarm = append(Swarm, r)
-		}
+		setting(lifeTime)
 	}
 }
 
@@ -68,7 +71,7 @@ func pop(list *[]*Robot) *Robot {
 
 func (Robot *Robot) Prepare(url string) {
 	opts := []selenium.ServiceOption{}
-	service, err := selenium.NewChromeDriverService(SELENIUM_PATH, Robot.Port, opts...)
+	service, err := selenium.NewChromeDriverService(config.Spe.SeleniumPath, Robot.Port, opts...)
 	if nil != err {
 		fmt.Println(err.Error())
 		return

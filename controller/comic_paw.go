@@ -17,8 +17,8 @@ import (
 func ComicPaw() {
 	tags := map[string]int{
 		"恋爱": 20,
-		"古风": 46,
-		"穿越": 80,
+		//"古风": 46,
+		//"穿越": 80,
 	}
 	regions := map[string]int{
 		"国漫": 2,
