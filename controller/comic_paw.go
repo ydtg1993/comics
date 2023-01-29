@@ -6,8 +6,9 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"github.com/beego/beego/v2/core/logs"
+	"github.com/gocolly/colly"
+	"github.com/gocolly/colly/extensions"
 	"github.com/tidwall/gjson"
 	"strconv"
 	"strings"
@@ -49,32 +50,33 @@ func ComicUpdate() {
 }
 
 func category(tagId, regionId, payId, stateId int) {
-	url := fmt.Sprintf(config.Spe.SourceUrl+"/tag/%d?region=%d&pays=%d&state=%d&sort=1&page=1",
-		tagId, regionId, payId, stateId)
-	content, err := requestHtml(url, 3)
-	if err != nil {
-		return
-	}
+	bot := colly.NewCollector(
+		colly.AllowedDomains(config.Spe.SourceUrl),
+	)
+	extensions.RandomUserAgent(bot)
+	extensions.Referer(bot)
 
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(content))
+	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/tag/%d?region=%d&pays=%d&state=%d&sort=1&page=1",
+		tagId, regionId, payId, stateId)
+	lastPage := 1
+	bot.OnHTML("ul.pagination", func(e *colly.HTMLElement) {
+		page := e.DOM.Find(".itemBten").Last().Text()
+		if page != "" {
+			lastPage, _ = strconv.Atoi(strings.TrimSpace(page))
+		}
+		paw(tagId, regionId, payId, stateId, lastPage)
+	})
+	bot.OnResponse(func(r *colly.Response) {
+
+	})
+	err := bot.Visit(url)
 	if err != nil {
 		logs.Error("无法抓取分类列表页Dom:" + url)
-		return
-	}
-
-	lastPage := doc.Find("ul.pagination>.itemBten").Last().Text()
-	if lastPage == "" {
-		paw(tagId, regionId, payId, stateId, 1)
-		return
-	}
-	last, _ := strconv.Atoi(strings.TrimSpace(lastPage))
-	for ; last > 0; last-- {
-		paw(tagId, regionId, payId, stateId, last)
 	}
 }
 
 func paw(tagId, regionId, payId, stateId, last int) {
-	url := fmt.Sprintf(config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=1&page=%d&size=48",
+	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=1&page=%d&size=48",
 		tagId, regionId, payId, stateId, last)
 	content, err := requestApi(url, "GET", "", 3)
 	if err != nil {

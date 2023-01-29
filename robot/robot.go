@@ -5,17 +5,68 @@ import (
 	"fmt"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
+	"sync"
+	"time"
 )
+
+// selenium机器人池
+var Swarm []*Robot
 
 type Robot struct {
 	Service   *selenium.Service
 	WebDriver selenium.WebDriver
 	Port      int
+	Lifetime  time.Time
+	Lock      sync.Mutex
+	State     int
 }
 
 const SELENIUM_PATH = "chromedriver.exe"
 
-func (Robot *Robot) Start(url string) {
+func SetUp(num int) {
+	t := time.NewTicker(time.Second * 10)
+	defer t.Stop()
+	for {
+		<-t.C
+		lifeTime := time.Now().Add(time.Minute * 3)
+		activeNum := len(Swarm)
+		if activeNum >= num {
+			if Swarm[0].Lifetime.Second() < time.Now().Second() {
+				continue //没有过期
+			}
+			for {
+				if len(Swarm) == 0 {
+					break
+				}
+				sw := pop(&Swarm)
+				sw.Lock.Lock()
+				sw.WebDriver.Close()
+				sw.Service.Stop()
+			}
+		}
+		for {
+			if len(Swarm) >= num {
+				break
+			}
+
+			r := &Robot{
+				Port:     19991 + len(Swarm),
+				Lifetime: lifeTime,
+			}
+			r.Prepare("https://" + config.Spe.SourceUrl)
+			Swarm = append(Swarm, r)
+		}
+	}
+}
+
+func pop(list *[]*Robot) *Robot {
+	f := len(*list)
+	rv := (*list)[f-1]
+	*list = (*list)[:f-1]
+	return rv
+}
+
+func (Robot *Robot) Prepare(url string) {
 	opts := []selenium.ServiceOption{}
 	service, err := selenium.NewChromeDriverService(SELENIUM_PATH, Robot.Port, opts...)
 	if nil != err {

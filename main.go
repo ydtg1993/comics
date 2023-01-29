@@ -2,6 +2,7 @@ package main
 
 import (
 	"comics/controller"
+	"comics/robot"
 	"comics/tools/config"
 	"comics/tools/database"
 	"comics/tools/log"
@@ -15,18 +16,11 @@ import (
 func main() {
 	Setup()
 
-	//TaskComic()
+	go TaskComic()
 
 	TaskChapter()
 
 	//go TaskImage()
-
-	/*done := make(chan int)
-	Robot := new(robot.Robot)
-	defer Robot.Service.Stop()
-	Robot.Start("https://ac.qq.com/Comic/all/page/1")
-	Robot.TapIn(selenium.ByXPATH, "/html/body/div[3]/div[2]/div/div[2]/ul/li[1]/div[1]/a")
-	<-done*/
 }
 
 func Setup() {
@@ -53,12 +47,14 @@ func Setup() {
 		panic(err)
 	}
 
+	go robot.SetUp(config.Spe.Maxthreads)
+
 	// 开始前的线程数
 	logs.Debug("线程数量 starting: %d\n", runtime.NumGoroutine())
 }
 
 func TaskComic() {
-	t := time.NewTicker(time.Minute * 5)
+	t := time.NewTicker(time.Minute * 15)
 	defer t.Stop()
 
 	controller.ComicPaw()
@@ -70,27 +66,24 @@ func TaskComic() {
 }
 
 func TaskChapter() {
-	t := time.NewTicker(time.Minute * 15)
+	t := time.NewTicker(time.Second * 20)
 	defer t.Stop()
-	controller.ChapterPaw(1)
 	for {
-		<-t.C
 		wg := sync.WaitGroup{}
-		wg.Add(3)
-		for i := 0; i < 3; i++ {
+		wg.Add(config.Spe.Maxthreads)
+		for i := 0; i < config.Spe.Maxthreads; i++ {
 			go func(i int) {
-				controller.ChapterPaw(i)
+				controller.ChapterPaw()
 				wg.Done()
 			}(i)
 		}
+		<-t.C
 	}
 }
 
 func TaskImage() {
 	t := time.NewTicker(time.Minute * 15)
 	defer t.Stop()
-
-	controller.ImagePaw()
 
 	for {
 		<-t.C

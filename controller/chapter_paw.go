@@ -12,13 +12,27 @@ import (
 	"time"
 )
 
-func ChapterPaw(tunnel int) {
-	Rob := robot.Robot{Port: 19993 + tunnel}
-	Rob.Start(config.Spe.SourceUrl)
-	defer Rob.Service.Stop()
-	defer Rob.WebDriver.Close()
+func ChapterPaw() {
+	var Rob *robot.Robot
+	for _, robot := range robot.Swarm {
+		if robot.State == 1 {
+			continue
+		}
+		robot.Lock.Lock()
+		robot.State = 1
+		Rob = robot
+		break
+	}
+	if Rob == nil {
+		return
+	}
+	defer func() {
+		Rob.State = 0
+		Rob.Lock.Unlock()
+	}()
+
 	wg := sync.WaitGroup{}
-	taskLimit := 100
+	taskLimit := 10
 	wg.Add(taskLimit)
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceComicTASK)
@@ -34,7 +48,7 @@ func ChapterPaw(tunnel int) {
 			wg.Done()
 			continue
 		}
-		Rob.WebDriver.Get(config.Spe.SourceUrl + "/" + sourceComic.SourceUri)
+		Rob.WebDriver.Get("https://" + config.Spe.SourceUrl + "/" + sourceComic.SourceUri)
 		t := time.NewTicker(time.Second * 1)
 		<-t.C
 		var arg []interface{}
@@ -58,7 +72,7 @@ func ChapterPaw(tunnel int) {
 			dom, err = itemElement.FindElement(selenium.ByClassName, "title")
 			if err == nil {
 				_, err = dom.FindElement(selenium.ByClassName, "lockedIcon")
-				if err != nil { //收费
+				if err == nil { //收费
 					sourceChapter.IsFree = 1
 				}
 				dom, err = dom.FindElement(selenium.ByTagName, "a")
