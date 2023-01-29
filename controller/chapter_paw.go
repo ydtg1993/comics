@@ -8,7 +8,6 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"github.com/tebeka/selenium"
-	"sync"
 	"time"
 )
 
@@ -19,6 +18,9 @@ func ChapterPaw() {
 			continue
 		}
 		robot.Lock.Lock()
+		if robot.State == 1 {
+			continue
+		}
 		robot.State = 1
 		Rob = robot
 		break
@@ -31,21 +33,15 @@ func ChapterPaw() {
 		Rob.Lock.Unlock()
 	}()
 
-	wg := sync.WaitGroup{}
 	taskLimit := 10
-	wg.Add(taskLimit)
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceComicTASK)
 		if err != nil || id == "" {
-			for i := 0; i < (taskLimit - limit); i++ {
-				wg.Done()
-			}
 			return
 		}
 
 		var sourceComic model.SourceComic
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceComic).Error; err != nil {
-			wg.Done()
 			continue
 		}
 		Rob.WebDriver.Get("https://" + config.Spe.SourceUrl + "/" + sourceComic.SourceUri)
@@ -65,8 +61,14 @@ func ChapterPaw() {
 			sourceChapter.ComicId = sourceComic.SourceId
 			sourceChapter.Sort = sort
 			if err == nil {
-				sourceChapter.Title, _ = dom.GetAttribute("alt")
+				sourceChapter.Title, err = dom.GetAttribute("alt")
 				sourceChapter.Cover, _ = dom.GetAttribute("src")
+			} else {
+				dom, err = itemElement.FindElement(selenium.ByClassName, "imgCover")
+				if err == nil {
+					sourceChapter.Title, err = dom.GetAttribute("alt")
+					sourceChapter.Cover, _ = dom.GetAttribute("src")
+				}
 			}
 
 			dom, err = itemElement.FindElement(selenium.ByClassName, "title")
@@ -88,8 +90,8 @@ func ChapterPaw() {
 					1,
 					sourceComic.SourceId,
 					sourceChapter.SourceChapterId).FirstOrCreate(&sourceChapter)
+				rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
 			}
 		}
 	}
-	wg.Wait()
 }

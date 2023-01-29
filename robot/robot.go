@@ -56,6 +56,8 @@ func SetUp(num int) {
 				sw.Lock.Lock()
 				sw.WebDriver.Close()
 				sw.Service.Stop()
+				sw.State = 1
+				sw.Lock.Unlock()
 			}
 		}
 		setting(lifeTime)
