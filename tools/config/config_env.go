@@ -34,11 +34,9 @@ type Specification struct {
 
 	UserAgent    string `envconfig:"USER_AGENT"`
 	SourceUrl    string `envconfig:"SOURCE_URL"`
-	Downpath     string `envconfig:"DOWN_PATH"`
-	Downtimeout  int64  `envconfig:"DOWN_TIMEOUT"`
 	Downdomain   string `envconfig:"DOWN_DOMAIN"`
 	Maxthreads   int    `envconfig:"MAX_THREADS"`
-	MapDown      int    `envconfig:"MAP_DOWN"`
+	DownloadPath string `envconfig:"DOWNLOAD_PATH"`
 	SeleniumPath string `envconfig:"SELENIUM_PATH"`
 
 	Logday   int      `envconfig:"LOG_DAY"`

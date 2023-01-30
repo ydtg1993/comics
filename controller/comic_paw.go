@@ -10,15 +10,17 @@ import (
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"github.com/tidwall/gjson"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
 func ComicPaw() {
 	tags := map[string]int{
-		"恋爱": 20,
+		//"恋爱": 20,
 		//"古风": 46,
 		//"穿越": 80,
+		"竞技": 72,
 	}
 	regions := map[string]int{
 		"国漫": 2,
@@ -64,10 +66,16 @@ func category(tagId, regionId, payId, stateId int) {
 		if page != "" {
 			lastPage, _ = strconv.Atoi(strings.TrimSpace(page))
 		}
-		paw(tagId, regionId, payId, stateId, lastPage)
+		for {
+			if lastPage <= 1 {
+				break
+			}
+			paw(tagId, regionId, payId, stateId, lastPage)
+			lastPage--
+		}
 	})
 	bot.OnResponse(func(r *colly.Response) {
-
+		paw(tagId, regionId, payId, stateId, 1)
 	})
 	err := bot.Visit(url)
 	if err != nil {
@@ -90,14 +98,17 @@ func paw(tagId, regionId, payId, stateId, last int) {
 		sourceComic := new(model.SourceComic)
 		sourceComic.Source = 1
 		sourceComic.SourceId = id
-		sourceComic.Cover = value.Get("cover_image_url").String()
-		sourceComic.SourceUri = "web/topic/" + value.Get("id").String()
-		sourceComic.Title = value.Get("title").String()
-		var Category []string
-		for _, v := range value.Get("category").Array() {
-			Category = append(Category, v.Str)
+
+		coverUrl := strings.TrimSuffix(value.Get("cover_image_url").String(), "-t.w207.webp.h")
+		cover := DownFile(coverUrl, config.Spe.DownloadPath+"comic_cover", filepath.Base(coverUrl)+".webp")
+		if cover != "" {
+			sourceComic.Cover = cover
 		}
-		sourceComic.Category = Category
+		sourceComic.SourceUrl = "https://" + config.Spe.SourceUrl + "/web/topic/" + value.Get("id").String()
+		sourceComic.Title = value.Get("title").String()
+		for _, v := range value.Get("category").Array() {
+			sourceComic.Category = append(sourceComic.Category, v.Str)
+		}
 		sourceComic.Author = value.Get("author_name").String()
 		sourceComic.LikeCount = value.Get("likes_count").String()
 		sourceComic.Popularity = value.Get("popularity").String()

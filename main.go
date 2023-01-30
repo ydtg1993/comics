@@ -16,11 +16,11 @@ import (
 func main() {
 	Setup()
 
-	//go TaskComic()
+	go TaskComic()
 
-	TaskChapter()
+	go TaskChapter()
 
-	//go TaskImage()
+	TaskImage()
 }
 
 func Setup() {
@@ -66,7 +66,7 @@ func TaskComic() {
 }
 
 func TaskChapter() {
-	t := time.NewTicker(time.Second * 30)
+	t := time.NewTicker(time.Second * 20)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -82,7 +82,7 @@ func TaskChapter() {
 }
 
 func TaskImage() {
-	t := time.NewTicker(time.Second * 45)
+	t := time.NewTicker(time.Second * 30)
 	defer t.Stop()
 
 	for {

@@ -36,10 +36,10 @@ func SetUp(num int) {
 			Swarm = append(Swarm, r)
 		}
 	}
-	lifeTime := time.Now().Add(time.Hour * 4)
+	lifeTime := time.Now().Add(time.Hour * 2)
 	setting(lifeTime)
 
-	t := time.NewTicker(time.Hour * 1)
+	t := time.NewTicker(time.Minute * 30)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -64,11 +64,27 @@ func SetUp(num int) {
 	}
 }
 
-func pop(list *[]*Robot) *Robot {
-	f := len(*list)
-	rv := (*list)[f-1]
-	*list = (*list)[:f-1]
-	return rv
+func GetRob() *Robot {
+	var Rob *Robot
+	for _, robot := range Swarm {
+		if robot.State == 1 {
+			continue
+		}
+		robot.Lock.Lock()
+		if robot.State == 1 {
+			robot.Lock.Unlock()
+			continue
+		}
+		robot.State = 1
+		Rob = robot
+		break
+	}
+	return Rob
+}
+
+func ResetRob(rob *Robot) {
+	rob.State = 0
+	rob.Lock.Unlock()
 }
 
 func (Robot *Robot) Prepare(url string) {
@@ -109,4 +125,11 @@ func (Robot *Robot) Prepare(url string) {
 		return
 	}
 	Robot.WebDriver = wb
+}
+
+func pop(list *[]*Robot) *Robot {
+	f := len(*list)
+	rv := (*list)[f-1]
+	*list = (*list)[:f-1]
+	return rv
 }

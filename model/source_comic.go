@@ -14,7 +14,7 @@ type SourceComic struct {
 	Id           int      `json:"id" gorm:"primarykey"`
 	Source       int      `json:"source"`
 	SourceId     int      `json:"source_id"`
-	SourceUri    string   `json:"source_uri"`
+	SourceUrl    string   `json:"source_url"`
 	Cover        string   `json:"cover"`
 	Title        string   `json:"title"`
 	Author       string   `json:"Author"`

@@ -4,7 +4,6 @@ import (
 	"comics/tools/config"
 	"compress/gzip"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -28,10 +27,10 @@ func (Robot *Robot) TapIn(method, path string) bool {
 	return false
 }
 
-func (Robot *Robot) CatchApi(url string, method string, body io.Reader) []byte {
-	payload := strings.NewReader("page=1&limit=500&start=2012-11-24%2000%3A00%3A00&end=2019-11-24%2023%3A00%3A00&pid=&rid=")
-	req, _ := http.NewRequest(method, url, payload)
-	req.Header.Add("Accept", "application/json, text/javascript, */*")
+func (Robot *Robot) CatchImage(url string) []byte {
+	payload := strings.NewReader("")
+	req, _ := http.NewRequest("GET", url, payload)
+	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
 	req.Header.Add("Accept-Encoding", "gzip, deflate")
 	req.Header.Add("Accept-Language", "zh-CN,zh;q=0.9")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8")

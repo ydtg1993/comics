@@ -14,7 +14,7 @@ type SourceChapter struct {
 	SourceChapterId int    `json:"source_chapter_id"`
 	Sort            int    `json:"sort"`
 	IsFree          int    `json:"is_free"`
-	SourceUri       string `json:"source_uri"`
+	SourceUrl       string `json:"source_url"`
 	Cover           string `json:"cover"`
 	Title           string `json:"title"`
 	SourceData      string `json:"source_data"`

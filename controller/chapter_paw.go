@@ -5,35 +5,19 @@ import (
 	"comics/model"
 	"comics/robot"
 	"comics/tools"
-	"comics/tools/config"
 	"comics/tools/rd"
 	"github.com/tebeka/selenium"
 	"time"
 )
 
 func ChapterPaw() {
-	var Rob *robot.Robot
-	for _, robot := range robot.Swarm {
-		if robot.State == 1 {
-			continue
-		}
-		robot.Lock.Lock()
-		if robot.State == 1 {
-			continue
-		}
-		robot.State = 1
-		Rob = robot
-		break
-	}
-	if Rob == nil {
+	rob := robot.GetRob()
+	if rob == nil {
 		return
 	}
-	defer func() {
-		Rob.State = 0
-		Rob.Lock.Unlock()
-	}()
+	defer robot.ResetRob(rob)
 
-	taskLimit := 10
+	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceComicTASK)
 		if err != nil || id == "" {
@@ -44,12 +28,12 @@ func ChapterPaw() {
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceComic).Error; err != nil {
 			continue
 		}
-		Rob.WebDriver.Get("https://" + config.Spe.SourceUrl + "/" + sourceComic.SourceUri)
+		rob.WebDriver.Get(sourceComic.SourceUrl)
 		var arg []interface{}
-		Rob.WebDriver.ExecuteScript("window.scrollBy(0,10000)", arg)
+		rob.WebDriver.ExecuteScript("window.scrollBy(0,100000)", arg)
 		t := time.NewTicker(time.Second * 2)
 		<-t.C
-		listElements, err := Rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
+		listElements, err := rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
 		if err != nil {
 			continue
 		}
@@ -79,9 +63,9 @@ func ChapterPaw() {
 				}
 				dom, err = dom.FindElement(selenium.ByTagName, "a")
 				if err == nil {
-					sourceChapter.SourceUri, err = dom.GetAttribute("href")
+					sourceChapter.SourceUrl, err = dom.GetAttribute("href")
 					if err == nil {
-						sourceChapter.SourceChapterId = tools.FindStringNumber(sourceChapter.SourceUri)
+						sourceChapter.SourceChapterId = tools.FindStringNumber(sourceChapter.SourceUrl)
 					}
 				}
 			}
