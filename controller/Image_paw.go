@@ -21,7 +21,7 @@ func ImagePaw() {
 
 	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
-		id, err := rd.LPop(model.SourceImageTASK)
+		id, err := rd.LPop(model.SourceChapterTASK)
 		if err != nil || id == "" {
 			return
 		}
@@ -55,7 +55,19 @@ func ImagePaw() {
 		}
 		sourceImage.ChapterId, _ = strconv.Atoi(id)
 		orm.Eloquent.Where("chapter_id = ?", id).FirstOrCreate(&sourceImage)
-
-		rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
+		if sourceImage.Id > 0 {
+			cookies, _ := rob.WebDriver.GetCookies()
+			download(
+				sourceChapter.ComicId,
+				sourceImage.ChapterId,
+				cookies, sourceImage.SourceData)
+		}
 	}
+}
+
+func download(comicId, chapterId int, cookies []selenium.Cookie, images model.Images) {
+	/*for _,img := range images  {
+		dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, chapterId)
+		DownFile(img,dir,)
+	}*/
 }

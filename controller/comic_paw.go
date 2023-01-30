@@ -100,7 +100,8 @@ func paw(tagId, regionId, payId, stateId, last int) {
 		sourceComic.SourceId = id
 
 		coverUrl := strings.TrimSuffix(value.Get("cover_image_url").String(), "-t.w207.webp.h")
-		cover := DownFile(coverUrl, config.Spe.DownloadPath+"comic_cover", filepath.Base(coverUrl)+".webp")
+		var cookies map[string]string
+		cover := DownFile(coverUrl, config.Spe.DownloadPath+"comic_cover", filepath.Base(coverUrl)+".webp", cookies)
 		if cover != "" {
 			sourceComic.Cover = cover
 		}
@@ -120,7 +121,7 @@ func paw(tagId, regionId, payId, stateId, last int) {
 
 		err := orm.Eloquent.Where("source = ? and source_id = ?", 1, id).FirstOrCreate(&sourceComic).Error
 		if err != nil {
-			panic(err)
+			logs.Error(fmt.Sprintf("comic数据导入失败 source = %d source_id = %d", 1, id))
 		}
 		rd.RPush(model.SourceComicTASK, sourceComic.Id)
 		return true

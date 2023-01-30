@@ -9,7 +9,6 @@ import (
 	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"time"
 )
@@ -35,7 +34,7 @@ func requestApi(url, method, param string, timeout int) (gjson.Result, error) {
 * @param	string		本地路径
 * @param	string		文件名称
  */
-func DownFile(sUrl, filepath, fileName string) string {
+func DownFile(sUrl, filepath, fileName string, cookies map[string]string) string {
 	//拼接完整地址
 	allPathName := filepath + "/" + fileName
 	//建立远程连接
@@ -47,25 +46,17 @@ func DownFile(sUrl, filepath, fileName string) string {
 		logs.Warning("连接请求失败 error->", sUrl, er.Error())
 		return ""
 	}
-
-	if req != nil && req.Body != nil {
-		defer req.Body.Close()
-	} else {
-		return ""
-	}
-
-	//解析url
-	u, uErr := url.Parse(sUrl)
-	if uErr != nil {
-		logs.Warning("url地址无法解析", sUrl, uErr.Error())
-		return ""
-	}
-
 	//配置参数
-	req.Header.Set("Host", u.Host)
+	req.Header.Set("Host", config.Spe.SourceUrl)
 	req.Header.Set("Accept-Encoding", "identity") //强制服务器不走压缩，不然会得不到contentLength
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36")
 	req.Header.Set("Connection", "Close")
+
+	ck := new(bytes.Buffer)
+	for key, value := range cookies {
+		fmt.Fprintf(ck, "%s=\"%s\";", key, value)
+	}
+	req.Header.Set("Cookie", ck.String())
 
 	resp, err := client.Do(req)
 	if err != nil {
