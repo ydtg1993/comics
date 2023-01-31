@@ -16,9 +16,9 @@ import (
 func main() {
 	Setup()
 
-	//go TaskComic()
+	go TaskComic()
 
-	//go TaskChapter()
+	go TaskChapter()
 
 	TaskImage()
 }
