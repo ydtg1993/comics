@@ -10,7 +10,6 @@ type SourceChapter struct {
 	Id              int    `json:"id" gorm:"primarykey"`
 	ComicId         int    `json:"comic_id"`
 	Source          int    `json:"source"`
-	SourceId        int    `json:"source_id"`
 	SourceChapterId int    `json:"source_chapter_id"`
 	Sort            int    `json:"sort"`
 	IsFree          int    `json:"is_free"`
