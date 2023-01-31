@@ -16,9 +16,9 @@ import (
 func main() {
 	Setup()
 
-	go TaskComic()
+	//go TaskComic()
 
-	go TaskChapter()
+	//go TaskChapter()
 
 	TaskImage()
 }
@@ -54,7 +54,7 @@ func Setup() {
 }
 
 func TaskComic() {
-	t := time.NewTicker(time.Minute * 15)
+	t := time.NewTicker(time.Hour * 6)
 	defer t.Stop()
 
 	controller.ComicPaw()
@@ -66,7 +66,7 @@ func TaskComic() {
 }
 
 func TaskChapter() {
-	t := time.NewTicker(time.Second * 30)
+	t := time.NewTicker(time.Minute * 15)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -83,7 +83,7 @@ func TaskChapter() {
 }
 
 func TaskImage() {
-	t := time.NewTicker(time.Second * 30)
+	t := time.NewTicker(time.Minute * 20)
 	defer t.Stop()
 
 	for {

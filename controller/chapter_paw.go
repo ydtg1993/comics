@@ -17,7 +17,7 @@ func ChapterPaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 50
+	taskLimit := 100
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceComicTASK)
 		if err != nil || id == "" {
