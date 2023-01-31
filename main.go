@@ -66,7 +66,7 @@ func TaskComic() {
 }
 
 func TaskChapter() {
-	t := time.NewTicker(time.Minute * 15)
+	t := time.NewTicker(time.Second * 15)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -83,7 +83,7 @@ func TaskChapter() {
 }
 
 func TaskImage() {
-	t := time.NewTicker(time.Minute * 20)
+	t := time.NewTicker(time.Second * 20)
 	defer t.Stop()
 	for {
 		<-t.C

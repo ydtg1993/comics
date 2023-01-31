@@ -34,7 +34,6 @@ type Specification struct {
 
 	UserAgent    string `envconfig:"USER_AGENT"`
 	SourceUrl    string `envconfig:"SOURCE_URL"`
-	Downdomain   string `envconfig:"DOWN_DOMAIN"`
 	Maxthreads   int    `envconfig:"MAX_THREADS"`
 	DownloadPath string `envconfig:"DOWNLOAD_PATH"`
 	SeleniumPath string `envconfig:"SELENIUM_PATH"`
