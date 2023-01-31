@@ -40,7 +40,7 @@ func ComicPaw() {
 			for pay, payId := range pays {
 				for state, stateId := range states {
 					fmt.Printf("%s %s %s %s \n", tag, region, pay, state)
-					category(tagId, regionId, payId, stateId)
+					category(tagId, regionId, payId, stateId, 1)
 				}
 			}
 		}
@@ -48,10 +48,10 @@ func ComicPaw() {
 }
 
 func ComicUpdate() {
-
+	category(0, 1, 0, 0, 3)
 }
 
-func category(tagId, regionId, payId, stateId int) {
+func category(tagId, regionId, payId, stateId, sort int) {
 	bot := colly.NewCollector(
 		colly.AllowedDomains(config.Spe.SourceUrl),
 	)
@@ -70,12 +70,12 @@ func category(tagId, regionId, payId, stateId int) {
 			if lastPage <= 1 {
 				break
 			}
-			paw(tagId, regionId, payId, stateId, lastPage)
+			paw(tagId, regionId, payId, stateId, sort, lastPage)
 			lastPage--
 		}
 	})
 	bot.OnResponse(func(r *colly.Response) {
-		paw(tagId, regionId, payId, stateId, 1)
+		paw(tagId, regionId, payId, stateId, sort, 1)
 	})
 	err := bot.Visit(url)
 	if err != nil {
@@ -83,9 +83,9 @@ func category(tagId, regionId, payId, stateId int) {
 	}
 }
 
-func paw(tagId, regionId, payId, stateId, last int) {
-	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=1&page=%d&size=48",
-		tagId, regionId, payId, stateId, last)
+func paw(tagId, regionId, payId, stateId, sort, page int) {
+	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=%d&page=%d&size=48",
+		tagId, regionId, payId, stateId, sort, page)
 	content, err := requestApi(url, "GET", "", 3)
 	if err != nil {
 		return
