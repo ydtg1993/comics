@@ -85,6 +85,8 @@ func ChapterPaw() {
 							sourceChapter.ComicId,
 							sourceChapter.SourceChapterId,
 							err.Error()))
+					} else {
+						rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
 					}
 				}
 			}
