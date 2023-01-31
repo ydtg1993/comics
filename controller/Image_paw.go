@@ -55,6 +55,7 @@ func ImagePaw() {
 			sourceImage.SourceData = append(sourceImage.SourceData, img)
 		}
 		sourceImage.ChapterId, _ = strconv.Atoi(id)
+		sourceImage.Images = model.Images{}
 		cookies, _ := rob.WebDriver.GetCookies()
 		download(
 			sourceChapter.ComicId,
@@ -72,7 +73,8 @@ func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Co
 		ck[cookie.Name] = cookie.Value
 	}
 	for key, img := range images {
-		dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, sourceImage.chapterId)
+		dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, sourceImage.ChapterId)
+
 		state := 0
 		for i := 0; i < 3; i++ {
 			file := DownFile(img, dir, fmt.Sprintf("%d.webp", key), ck)
