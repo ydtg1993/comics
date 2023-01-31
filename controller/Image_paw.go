@@ -62,8 +62,29 @@ func ImagePaw() {
 			&sourceImage,
 			cookies, sourceImage.SourceData)
 
-		orm.Eloquent.Where("chapter_id = ?", id).FirstOrCreate(&sourceImage)
-
+		var record model.SourceImage
+		err = orm.Eloquent.Where("chapter_id = ?", id).First(&record).Error
+		if err != nil { //no record
+			err = orm.Eloquent.Where("chapter_id = ?", id).Create(&sourceImage).Error
+			if err != nil {
+				logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d source_id = %d chapter_id = %d err = %s",
+					1,
+					sourceChapter.ComicId,
+					sourceChapter.SourceChapterId,
+					err.Error()))
+			}
+		} else {
+			err = orm.Eloquent.Model(&record).Where("chapter_id = ?", id).Updates(map[string]interface{}{
+				"images":      sourceImage.Images,
+				"source_data": sourceImage.SourceData,
+				"state":       sourceImage.State,
+			}).Error
+			logs.Error(fmt.Sprintf("chapter数据更新失败 source = %d source_id = %d chapter_id = %d err = %s",
+				1,
+				sourceChapter.ComicId,
+				sourceChapter.SourceChapterId,
+				err.Error()))
+		}
 	}
 }
 
