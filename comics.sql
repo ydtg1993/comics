@@ -11,7 +11,7 @@
  Target Server Version : 50737
  File Encoding         : 65001
 
- Date: 30/01/2023 16:52:29
+ Date: 31/01/2023 15:12:16
 */
 
 SET NAMES utf8mb4;
@@ -25,7 +25,6 @@ CREATE TABLE `source_chapter`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `comic_id` int(11) NOT NULL,
   `source` tinyint(1) NOT NULL DEFAULT 1 COMMENT '采集源 1:快看 2:腾讯',
-  `source_id` int(11) NOT NULL COMMENT '源漫画id',
   `source_chapter_id` int(11) NOT NULL COMMENT '源章节id',
   `source_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '源url',
   `cover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '封面',
@@ -36,7 +35,7 @@ CREATE TABLE `source_chapter`  (
   `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `source_chapter_id`(`source`, `source_id`, `source_chapter_id`) USING BTREE,
+  UNIQUE INDEX `source_chapter_id`(`source`, `source_chapter_id`) USING BTREE,
   UNIQUE INDEX `source_uri`(`source_url`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '采集-漫画章节' ROW_FORMAT = Dynamic;
 
@@ -75,6 +74,7 @@ CREATE TABLE `source_image`  (
   `chapter_id` int(11) NOT NULL,
   `images` json NOT NULL,
   `source_data` json NOT NULL,
+  `state` tinyint(1) NOT NULL DEFAULT 0 COMMENT '资源获取:0未开始 1已完成',
   `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE
