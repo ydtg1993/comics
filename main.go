@@ -78,6 +78,7 @@ func TaskChapter() {
 				wg.Done()
 			}(i)
 		}
+		wg.Wait()
 	}
 }
 
@@ -95,5 +96,6 @@ func TaskImage() {
 				wg.Done()
 			}(i)
 		}
+		wg.Wait()
 	}
 }

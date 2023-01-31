@@ -40,7 +40,7 @@ func DownFile(sUrl, filepath, fileName string, cookies map[string]string) string
 	//建立远程连接
 	sParam := ""
 	client := &http.Client{}
-	client.Timeout = time.Minute * 1
+	client.Timeout = time.Second * 30
 	req, er := http.NewRequest(http.MethodGet, sUrl, bytes.NewReader([]byte(sParam)))
 	if er != nil {
 		logs.Warning("连接请求失败 error->", sUrl, er.Error())
@@ -48,7 +48,9 @@ func DownFile(sUrl, filepath, fileName string, cookies map[string]string) string
 	}
 	//配置参数
 	req.Header.Set("Host", config.Spe.SourceUrl)
-	req.Header.Set("Accept-Encoding", "identity") //强制服务器不走压缩，不然会得不到contentLength
+	req.Header.Set("referer", "https://"+config.Spe.SourceUrl+"/")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36")
 	req.Header.Set("Connection", "Close")
 
