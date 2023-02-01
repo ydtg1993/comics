@@ -7,11 +7,14 @@ import (
 	"comics/tools/database"
 	"comics/tools/log"
 	"comics/tools/rd"
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"runtime"
 	"sync"
 	"time"
 )
+
+const TaskStepRecord = "task:step:record"
 
 func main() {
 	Setup()
@@ -58,11 +61,13 @@ func Setup() {
 func TaskComic(source *controller.SourceStrategy) {
 	t := time.NewTicker(time.Hour * 6)
 	defer t.Stop()
-
+	rd.RPush(TaskStepRecord, fmt.Sprintf("漫画-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 	source.ComicPaw()
 
 	for {
 		<-t.C
+		rd.Delete(TaskStepRecord)
+		rd.RPush(TaskStepRecord, fmt.Sprintf("漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 		source.ComicUpdate()
 	}
 }
@@ -74,6 +79,7 @@ func TaskChapter(source *controller.SourceStrategy) {
 		<-t.C
 		wg := sync.WaitGroup{}
 		wg.Add(config.Spe.Maxthreads)
+		rd.RPush(TaskStepRecord, fmt.Sprintf("章节-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 		for i := 0; i < config.Spe.Maxthreads; i++ {
 			go func() {
 				source.ChapterPaw()
@@ -91,6 +97,7 @@ func TaskImage(source *controller.SourceStrategy) {
 		<-t.C
 		wg := sync.WaitGroup{}
 		wg.Add(config.Spe.Maxthreads)
+		rd.RPush(TaskStepRecord, fmt.Sprintf("图片-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 		for i := 0; i < config.Spe.Maxthreads; i++ {
 			go func() {
 				source.ImagePaw()

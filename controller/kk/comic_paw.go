@@ -50,6 +50,7 @@ func ComicPaw() {
 
 func ComicUpdate() {
 	category(0, 1, 0, 0, 3)
+	//章节更新监测 TODO
 }
 
 func category(tagId, regionId, payId, stateId, sort int) {
