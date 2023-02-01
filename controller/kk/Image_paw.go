@@ -1,6 +1,7 @@
-package controller
+package kk
 
 import (
+	"comics/common"
 	"comics/global/orm"
 	"comics/model"
 	"comics/robot"
@@ -68,7 +69,7 @@ func ImagePaw() {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
 				logs.Error(fmt.Sprintf("image数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
-					1,
+					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
 					err.Error()))
@@ -81,7 +82,7 @@ func ImagePaw() {
 			}).Error
 			if err != nil {
 				logs.Error(fmt.Sprintf("image数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
-					1,
+					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
 					err.Error()))
@@ -100,7 +101,7 @@ func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Co
 
 		state := 0
 		for i := 0; i < 3; i++ {
-			file := DownFile(img, dir, fmt.Sprintf("%d.webp", key), ck)
+			file := common.DownFile(img, dir, fmt.Sprintf("%d.webp", key), ck)
 			if file != "" {
 				state = 1
 				sourceImage.Images = append(sourceImage.Images, file)

@@ -1,4 +1,4 @@
-package controller
+package common
 
 import (
 	"bytes"
@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func requestApi(url, method, param string, timeout int) (gjson.Result, error) {
+func RequestApi(url, method, param string, timeout int) (gjson.Result, error) {
 	header := map[string]string{
 		"User-Agent": config.Spe.UserAgent,
 		"Referer":    config.Spe.SourceUrl}

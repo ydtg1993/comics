@@ -16,11 +16,12 @@ import (
 func main() {
 	Setup()
 
-	go TaskComic()
+	source := controller.SourceOperate(config.Spe.SourceUrl)
+	TaskComic(source)
 
-	go TaskChapter()
+	go TaskChapter(source)
 
-	TaskImage()
+	TaskImage(source)
 }
 
 func Setup() {
@@ -53,20 +54,20 @@ func Setup() {
 	logs.Debug("线程数量 starting: %d\n", runtime.NumGoroutine())
 }
 
-func TaskComic() {
+func TaskComic(source *controller.SourceStrategy) {
 	t := time.NewTicker(time.Hour * 6)
 	defer t.Stop()
 
-	controller.ComicPaw()
+	source.ComicPaw()
 
 	for {
 		<-t.C
-		controller.ComicUpdate()
+		source.ComicUpdate()
 	}
 }
 
-func TaskChapter() {
-	t := time.NewTicker(time.Second * 15)
+func TaskChapter(source *controller.SourceStrategy) {
+	t := time.NewTicker(time.Minute * 12)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -74,7 +75,7 @@ func TaskChapter() {
 		wg.Add(config.Spe.Maxthreads)
 		for i := 0; i < config.Spe.Maxthreads; i++ {
 			go func() {
-				controller.ChapterPaw()
+				source.ChapterPaw()
 				wg.Done()
 			}()
 		}
@@ -82,8 +83,8 @@ func TaskChapter() {
 	}
 }
 
-func TaskImage() {
-	t := time.NewTicker(time.Second * 20)
+func TaskImage(source *controller.SourceStrategy) {
+	t := time.NewTicker(time.Minute * 20)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -91,7 +92,7 @@ func TaskImage() {
 		wg.Add(config.Spe.Maxthreads)
 		for i := 0; i < config.Spe.Maxthreads; i++ {
 			go func() {
-				controller.ImagePaw()
+				source.ImagePaw()
 				wg.Done()
 			}()
 		}

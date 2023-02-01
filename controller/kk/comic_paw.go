@@ -1,6 +1,7 @@
-package controller
+package kk
 
 import (
+	"comics/common"
 	"comics/global/orm"
 	"comics/model"
 	"comics/tools/config"
@@ -86,7 +87,7 @@ func category(tagId, regionId, payId, stateId, sort int) {
 func paw(tagId, regionId, payId, stateId, sort, page int) {
 	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=%d&page=%d&size=48",
 		tagId, regionId, payId, stateId, sort, page)
-	content, err := requestApi(url, "GET", "", 3)
+	content, err := common.RequestApi(url, "GET", "", 3)
 	if err != nil {
 		return
 	}
@@ -102,7 +103,7 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 		coverUrl := strings.TrimSuffix(value.Get("cover_image_url").String(), "-t.w207.webp.h")
 		var cookies map[string]string
 		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d", id%10)
-		cover := DownFile(coverUrl, dir, filepath.Base(coverUrl)+".webp", cookies)
+		cover := common.DownFile(coverUrl, dir, filepath.Base(coverUrl)+".webp", cookies)
 		if cover != "" {
 			sourceComic.Cover = cover
 		}
@@ -120,9 +121,9 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 			sourceComic.IsFree = 1
 		}
 
-		err := orm.Eloquent.Where("source = ? and source_id = ?", 1, id).FirstOrCreate(&sourceComic).Error
+		err := orm.Eloquent.Where("source = ? and source_id = ?", config.Spe.SourceId, id).FirstOrCreate(&sourceComic).Error
 		if err != nil {
-			logs.Error(fmt.Sprintf("comic数据导入失败 source = %d source_id = %d", 1, id))
+			logs.Error(fmt.Sprintf("comic数据导入失败 source = %d source_id = %d", config.Spe.SourceId, id))
 		}
 		rd.RPush(model.SourceComicTASK, sourceComic.Id)
 		return true

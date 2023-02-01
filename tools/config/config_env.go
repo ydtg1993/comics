@@ -33,6 +33,7 @@ type Specification struct {
 	RedisDb   int    `envconfig:"REDIS_DB"`
 
 	UserAgent    string `envconfig:"USER_AGENT"`
+	SourceId     int    `envconfig:"SOURCE_ID"`
 	SourceUrl    string `envconfig:"SOURCE_URL"`
 	Maxthreads   int    `envconfig:"MAX_THREADS"`
 	DownloadPath string `envconfig:"DOWNLOAD_PATH"`

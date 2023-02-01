@@ -1,10 +1,11 @@
-package controller
+package kk
 
 import (
 	"comics/global/orm"
 	"comics/model"
 	"comics/robot"
 	"comics/tools"
+	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
@@ -75,14 +76,14 @@ func ChapterPaw() {
 			if sourceChapter.SourceChapterId > 0 {
 				var exists bool
 				orm.Eloquent.Model(model.SourceChapter{}).Select("count(*) > 0").Where("source = ? and comic_id = ? and source_chapter_id = ?",
-					1,
+					config.Spe.SourceId,
 					sourceComic.Id,
 					sourceChapter.SourceChapterId).Find(&exists)
 				if exists == false {
 					err = orm.Eloquent.Create(&sourceChapter).Error
 					if err != nil {
 						logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
-							1,
+							config.Spe.SourceId,
 							sourceChapter.ComicId,
 							sourceChapter.SourceChapterId,
 							err.Error()))
