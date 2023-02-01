@@ -29,12 +29,12 @@ func ChapterPaw() {
 
 		var sourceComic model.SourceComic
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceComic).Error; err != nil {
-			logs.Info("未找到comic id=" + id)
+			logs.Info("未找到comic_id=" + id)
 			continue
 		}
 		rob.WebDriver.Get(sourceComic.SourceUrl)
 		var arg []interface{}
-		rob.WebDriver.ExecuteScript("window.scrollBy(0,100000)", arg)
+		rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
 		t := time.NewTicker(time.Second * 2)
 		<-t.C
 		listElements, err := rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
