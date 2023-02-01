@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-// selenium机器人池
 var Swarm []*Robot
 
 type Robot struct {
@@ -22,24 +21,10 @@ type Robot struct {
 }
 
 func SetUp(num int) {
-	setting := func(lifeTime time.Time) {
-		for {
-			if len(Swarm) >= num {
-				return
-			}
-
-			r := &Robot{
-				Port:     19991 + len(Swarm),
-				Lifetime: lifeTime,
-			}
-			r.Prepare("https://" + config.Spe.SourceUrl)
-			Swarm = append(Swarm, r)
-		}
-	}
 	lifeTime := time.Now().Add(time.Hour * 2)
-	setting(lifeTime)
+	setRob(num, lifeTime)
 
-	t := time.NewTicker(time.Minute * 30)
+	t := time.NewTicker(time.Minute * 15)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -48,19 +33,42 @@ func SetUp(num int) {
 			if Swarm[0].Lifetime.Second() < time.Now().Second() {
 				continue //没有过期
 			}
-			for {
-				if len(Swarm) == 0 {
-					break
-				}
-				sw := pop(&Swarm)
-				sw.Lock.Lock()
-				sw.WebDriver.Close()
-				sw.Service.Stop()
-				sw.State = 1
-				sw.Lock.Unlock()
-			}
+			deleteRob()
 		}
-		setting(lifeTime)
+		setRob(num, lifeTime)
+	}
+}
+
+func ReSetUp(num int) {
+	deleteRob()
+	lifeTime := time.Now().Add(time.Hour * 2)
+	setRob(num, lifeTime)
+}
+
+func setRob(num int, lifeTime time.Time) {
+	for {
+		if len(Swarm) >= num {
+			return
+		}
+
+		r := &Robot{
+			Port:     19991 + len(Swarm),
+			Lifetime: lifeTime,
+		}
+		r.prepare("https://" + config.Spe.SourceUrl)
+		Swarm = append(Swarm, r)
+	}
+}
+
+func deleteRob() {
+	for {
+		if len(Swarm) == 0 {
+			return
+		}
+		sw := pop(&Swarm)
+		sw.WebDriver.Close()
+		sw.Service.Stop()
+		sw.State = 1
 	}
 }
 
@@ -71,10 +79,6 @@ func GetRob() *Robot {
 			continue
 		}
 		robot.Lock.Lock()
-		if robot.State == 1 {
-			robot.Lock.Unlock()
-			continue
-		}
 		robot.State = 1
 		Rob = robot
 		break
@@ -87,7 +91,7 @@ func ResetRob(rob *Robot) {
 	rob.Lock.Unlock()
 }
 
-func (Robot *Robot) Prepare(url string) {
+func (Robot *Robot) prepare(url string) {
 	opts := []selenium.ServiceOption{}
 	service, err := selenium.NewChromeDriverService(config.Spe.SeleniumPath, Robot.Port, opts...)
 	if nil != err {

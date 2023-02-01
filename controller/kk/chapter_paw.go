@@ -39,7 +39,11 @@ func ChapterPaw() {
 		<-t.C
 		listElements, err := rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
 		if err != nil {
-			continue
+			logs.Error(fmt.Sprintf("未找到章节列表TopicItem source = %d comic_id = %s err = %s",
+				config.Spe.SourceId,
+				id, err.Error()))
+			robot.ReSetUp(config.Spe.Maxthreads)
+			return
 		}
 
 		for sort, itemElement := range listElements {
