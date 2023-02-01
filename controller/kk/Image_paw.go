@@ -21,7 +21,7 @@ func ImagePaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 50
+	taskLimit := 100
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceChapterTASK)
 		if err != nil || id == "" {

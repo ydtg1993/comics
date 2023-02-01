@@ -30,7 +30,7 @@ func ComicPaw() {
 	}
 	pays := map[string]int{
 		"免费": 1,
-		"付费": 2,
+		//"付费": 2,
 	}
 	states := map[string]int{
 		"连载中": 1,
