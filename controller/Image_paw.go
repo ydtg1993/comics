@@ -62,28 +62,30 @@ func ImagePaw() {
 			&sourceImage,
 			cookies, sourceImage.SourceData)
 
-		var record model.SourceImage
-		err = orm.Eloquent.Where("chapter_id = ?", id).First(&record).Error
-		if err != nil { //no record
-			err = orm.Eloquent.Where("chapter_id = ?", id).Create(&sourceImage).Error
+		var exists bool
+		orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).First(&exists)
+		if exists == false {
+			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
-				logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d source_id = %d chapter_id = %d err = %s",
+				logs.Error(fmt.Sprintf("image数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
 					1,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
 					err.Error()))
 			}
 		} else {
-			err = orm.Eloquent.Model(&record).Where("chapter_id = ?", id).Updates(map[string]interface{}{
+			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
 				"images":      sourceImage.Images,
 				"source_data": sourceImage.SourceData,
 				"state":       sourceImage.State,
 			}).Error
-			logs.Error(fmt.Sprintf("chapter数据更新失败 source = %d source_id = %d chapter_id = %d err = %s",
-				1,
-				sourceChapter.ComicId,
-				sourceChapter.SourceChapterId,
-				err.Error()))
+			if err != nil {
+				logs.Error(fmt.Sprintf("image数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
+					1,
+					sourceChapter.ComicId,
+					sourceChapter.SourceChapterId,
+					err.Error()))
+			}
 		}
 	}
 }

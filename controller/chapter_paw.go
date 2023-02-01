@@ -6,6 +6,8 @@ import (
 	"comics/robot"
 	"comics/tools"
 	"comics/tools/rd"
+	"fmt"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/tebeka/selenium"
 	"time"
 )
@@ -42,7 +44,7 @@ func ChapterPaw() {
 			dom, err := itemElement.FindElement(selenium.ByClassName, "img")
 			sourceChapter := new(model.SourceChapter)
 			sourceChapter.Source = 1
-			sourceChapter.ComicId = sourceComic.SourceId
+			sourceChapter.ComicId = sourceComic.Id
 			sourceChapter.Sort = sort
 			if err == nil {
 				sourceChapter.Title, err = dom.GetAttribute("alt")
@@ -70,11 +72,23 @@ func ChapterPaw() {
 				}
 			}
 			if sourceChapter.SourceChapterId > 0 {
-				orm.Eloquent.Where("source = ? and source_id = ? and source_chapter_id = ?",
+				var exists bool
+				orm.Eloquent.Model(model.SourceChapter{}).Select("count(*) > 0").Where("source = ? and comic_id = ? and source_chapter_id = ?",
 					1,
-					sourceComic.SourceId,
-					sourceChapter.SourceChapterId).FirstOrCreate(&sourceChapter)
-				rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
+					sourceComic.Id,
+					sourceChapter.SourceChapterId).Find(&exists)
+				if exists == false {
+					err = orm.Eloquent.Create(&sourceChapter).Error
+					if err != nil {
+						logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+							1,
+							sourceChapter.ComicId,
+							sourceChapter.SourceChapterId,
+							err.Error()))
+					} else {
+						rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
+					}
+				}
 			}
 		}
 	}
