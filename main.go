@@ -17,7 +17,8 @@ func main() {
 	Setup()
 
 	source := controller.SourceOperate(config.Spe.SourceUrl)
-	TaskComic(source)
+
+	go TaskComic(source)
 
 	go TaskChapter(source)
 
