@@ -19,6 +19,7 @@ type Specification struct {
 	MysqlNameRd     string `envconfig:"MYSQL_NAME_RD"`
 	MysqlPasswordRd string `envconfig:"MYSQL_PASSWORD_RD"`
 
+	MysqlCharset  string `envconfig:"MYSQL_CHARSET"`
 	MysqlDbName   string `envconfig:"MYSQL_DB_NAME"`
 	MysqlLifeTime int    `envconfig:"MYSQL_LIFE_TIME"`
 	MysqlIdleTime int    `envconfig:"MYSQL_IDLE_TIME"`

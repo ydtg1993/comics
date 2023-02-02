@@ -110,8 +110,10 @@ func (Robot *Robot) prepare(url string) {
 		Prefs: imagCaps,
 		Path:  "",
 		Args: []string{
-			//"--headless",
+			"--headless",
 			//"--no-sandbox",
+			"--ignore-certificate-errors",
+			"--ignore-ssl-errors",
 			"--user-agent=" + config.Spe.UserAgent,
 		},
 	}
