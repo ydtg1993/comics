@@ -11,7 +11,7 @@
  Target Server Version : 50737
  File Encoding         : 65001
 
- Date: 31/01/2023 15:12:16
+ Date: 02/02/2023 09:58:25
 */
 
 SET NAMES utf8mb4;
@@ -36,7 +36,8 @@ CREATE TABLE `source_chapter`  (
   `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `source_chapter_id`(`source`, `source_chapter_id`) USING BTREE,
-  UNIQUE INDEX `source_uri`(`source_url`) USING BTREE
+  UNIQUE INDEX `source_uri`(`source_url`) USING BTREE,
+  INDEX `comic_id`(`comic_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '采集-漫画章节' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -77,7 +78,8 @@ CREATE TABLE `source_image`  (
   `state` tinyint(1) NOT NULL DEFAULT 0 COMMENT '资源获取:0未开始 1已完成',
   `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `chapter_id`(`chapter_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
