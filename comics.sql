@@ -54,7 +54,7 @@ CREATE TABLE `source_comic`  (
   `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '作者',
   `category` json NOT NULL COMMENT '分类',
   `chapter_count` int(11) NOT NULL DEFAULT 0 COMMENT '章节数量',
-  `like_count` int(11) NOT NULL DEFAULT 0 COMMENT '喜欢',
+  `like_count` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '喜欢',
   `popularity` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '人气热度',
   `is_free` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0免费 1收费',
   `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',

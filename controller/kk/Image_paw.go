@@ -44,7 +44,7 @@ func ImagePaw() {
 				config.Spe.SourceId,
 				id, err.Error()))
 			robot.ReSetUp(config.Spe.Maxthreads)
-			continue
+			return
 		}
 		var sourceImage model.SourceImage
 		for _, img := range imgList {

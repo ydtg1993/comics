@@ -23,11 +23,10 @@ func ChapterPaw() {
 
 	taskLimit := 100
 	for limit := 0; limit < taskLimit; limit++ {
-		/*id, err := rd.LPop(model.SourceComicTASK)
+		id, err := rd.LPop(model.SourceComicTASK)
 		if err != nil || id == "" {
 			return
-		}*/
-		id := "2506"
+		}
 
 		var sourceComic model.SourceComic
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceComic).Error; err != nil {
@@ -100,10 +99,10 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceChapter).Error
 			if err != nil {
-				logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+				logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_url = %s err = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
-					sourceChapter.SourceChapterId,
+					sourceChapter.SourceUrl,
 					err.Error()))
 			} else {
 				rd.RPush(model.SourceChapterTASK, sourceChapter.Id)

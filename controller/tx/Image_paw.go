@@ -33,31 +33,81 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
-		imgList, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
+		imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
 		if err != nil {
-			logs.Error(fmt.Sprintf("未找到图片列表Dom: imgList source = %d chapter_id = %s err = %s",
+			logs.Error(fmt.Sprintf("未找到图片列表Dom: comic-contain source = %d chapter_url = %s err = %s",
 				config.Spe.SourceId,
-				id, err.Error()))
+				sourceChapter.SourceUrl, err.Error()))
 			robot.ReSetUp(config.Spe.Maxthreads)
+			return
 		}
+		var arg []interface{}
+		rob.WebDriver.ExecuteScriptAsync(`
+let f = setInterval(toBottom,500);
+function toBottom(){
+ let dom = document.getElementById("mainView")
+ const currentScroll = dom.scrollTop 
+ const clientHeight = dom.clientHeight; 
+ const scrollHeight = dom.scrollHeight; 
+ if (scrollHeight - 10 > currentScroll + clientHeight) {
+ dom.scrollTo({'left':0,'top': currentScroll + 800,behavior: 'smooth'})
+  }else{
+	 clearInterval(f)
+     return "ok"
+  }
+}
+`, arg)
+		t := time.NewTicker(time.Second * 10)
+		<-t.C
+
 		var sourceImage model.SourceImage
-		imageElems, _ := imgList.FindElements(selenium.ByTagName, "li")
-		for _, imgEle := range imageElems {
-			class, err := imgEle.GetAttribute("class")
+		imageList, _ := imgContain.FindElements(selenium.ByTagName, "li")
+		for _, image := range imageList {
+			class, err := image.GetAttribute("class")
 			if err == nil && class == "main_ad_top" {
 				continue
 			}
-			//sourceImage.SourceData = append(sourceImage.SourceData, img)
+			img, err := image.FindElement(selenium.ByTagName, "img")
+			if err != nil {
+				continue
+			}
+			source, _ := img.GetAttribute("src")
+			sourceImage.SourceData = append(sourceImage.SourceData, source)
 		}
-		var arg []interface{}
-		rob.WebDriver.ExecuteScript(`
-
-`, arg)
-		t := time.NewTicker(time.Second * 5)
-		<-t.C
 		sourceImage.ChapterId, _ = strconv.Atoi(id)
-		sourceImage.Images = model.Images{}
 
+		sourceImage.Images = model.Images{}
+		cookies, _ := rob.WebDriver.GetCookies()
+		download(
+			sourceChapter.ComicId,
+			&sourceImage,
+			cookies, sourceImage.SourceData)
+
+		var exists bool
+		orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).First(&exists)
+		if exists == false {
+			err = orm.Eloquent.Create(&sourceImage).Error
+			if err != nil {
+				logs.Error(fmt.Sprintf("image数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+					config.Spe.SourceId,
+					sourceChapter.ComicId,
+					sourceChapter.SourceChapterId,
+					err.Error()))
+			}
+		} else {
+			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
+				"images":      sourceImage.Images,
+				"source_data": sourceImage.SourceData,
+				"state":       sourceImage.State,
+			}).Error
+			if err != nil {
+				logs.Error(fmt.Sprintf("image数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
+					config.Spe.SourceId,
+					sourceChapter.ComicId,
+					sourceChapter.SourceChapterId,
+					err.Error()))
+			}
+		}
 	}
 }
 
@@ -71,7 +121,7 @@ func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Co
 
 		state := 0
 		for i := 0; i < 3; i++ {
-			file := common.DownFile(img, dir, fmt.Sprintf("%d.webp", key), ck)
+			file := common.DownFile(img, dir, fmt.Sprintf("%d.jpg", key), ck)
 			if file != "" {
 				state = 1
 				sourceImage.Images = append(sourceImage.Images, file)
