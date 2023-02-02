@@ -21,11 +21,12 @@ func main() {
 	Setup()
 
 	TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
+	rd.Delete(TaskStepRecord)
 	source := controller.SourceOperate(config.Spe.SourceUrl)
 
-	go TaskComic(source)
+	//go TaskComic(source)
 
-	go TaskChapter(source)
+	//go TaskChapter(source)
 
 	TaskImage(source)
 }
@@ -75,7 +76,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 12)
+	t := time.NewTicker(time.Second * 5)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -93,7 +94,7 @@ func TaskChapter(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 30)
+	t := time.NewTicker(time.Second * 1)
 	defer t.Stop()
 	for {
 		<-t.C

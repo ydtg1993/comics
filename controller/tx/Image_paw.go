@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/tebeka/selenium"
+	"strconv"
 	"time"
 )
 
@@ -32,10 +33,30 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
+		imgList, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
+		if err != nil {
+			logs.Error(fmt.Sprintf("未找到图片列表Dom: imgList source = %d chapter_id = %s err = %s",
+				config.Spe.SourceId,
+				id, err.Error()))
+			robot.ReSetUp(config.Spe.Maxthreads)
+		}
+		var sourceImage model.SourceImage
+		imageElems, _ := imgList.FindElements(selenium.ByTagName, "li")
+		for _, imgEle := range imageElems {
+			class, err := imgEle.GetAttribute("class")
+			if err == nil && class == "main_ad_top" {
+				continue
+			}
+			//sourceImage.SourceData = append(sourceImage.SourceData, img)
+		}
 		var arg []interface{}
-		rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
-		t := time.NewTicker(time.Second * 2)
+		rob.WebDriver.ExecuteScript(`
+
+`, arg)
+		t := time.NewTicker(time.Second * 5)
 		<-t.C
+		sourceImage.ChapterId, _ = strconv.Atoi(id)
+		sourceImage.Images = model.Images{}
 
 	}
 }
