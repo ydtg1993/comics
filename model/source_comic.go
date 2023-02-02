@@ -11,22 +11,22 @@ import (
 type Category []string
 
 type SourceComic struct {
-	Id           int      `json:"id" gorm:"primarykey"`
-	Source       int      `json:"source"`
-	SourceId     int      `json:"source_id"`
-	SourceUrl    string   `json:"source_url"`
-	Cover        string   `json:"cover"`
-	Title        string   `json:"title"`
-	Author       string   `json:"Author"`
-	Category     Category `json:"category" gorm:"type:json"`
-	ChapterCount int      `json:"chapter_count"`
-	LikeCount    string   `json:"like_count"`
-	Popularity   string   `json:"popularity"`
-	IsFree       int      `json:"is_free"`
-	Description  string   `json:"description"`
-	SourceData   string   `json:"source_data"`
-	CreatedAt    string   `json:"created_at"`
-	UpdatedAt    string   `json:"updated_at"`
+	Id           int       `json:"id" gorm:"primarykey"`
+	Source       int       `json:"source"`
+	SourceId     int       `json:"source_id"`
+	SourceUrl    string    `json:"source_url"`
+	Cover        string    `json:"cover"`
+	Title        string    `json:"title"`
+	Author       string    `json:"Author"`
+	Category     Category  `json:"category" gorm:"type:json"`
+	ChapterCount int       `json:"chapter_count"`
+	LikeCount    string    `json:"like_count"`
+	Popularity   string    `json:"popularity"`
+	IsFree       int       `json:"is_free"`
+	Description  string    `json:"description"`
+	SourceData   string    `json:"source_data"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 const SourceComicTASK = "source:comic:task"
@@ -44,13 +44,13 @@ func (d *SourceComic) Create() (err error) {
 }
 
 func (ma *SourceComic) BeforeCreate(tx *gorm.DB) (err error) {
-	ma.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	ma.CreatedAt = time.Now()
+	ma.UpdatedAt = time.Now()
 	return
 }
 
 func (ma *SourceComic) BeforeUpdate(tx *gorm.DB) (err error) {
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	ma.UpdatedAt = time.Now()
 	return
 }
 

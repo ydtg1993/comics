@@ -108,5 +108,14 @@ func ChapterPaw() {
 				}
 			}
 		}
+
+		detail, err := rob.WebDriver.FindElement(selenium.ByClassName, "detailsBox")
+		if err == nil {
+			sourceComic.Description, _ = detail.Text()
+		}
+		var total int64
+		orm.Eloquent.Model(model.SourceChapter{}).Where("comic_id = ?", sourceComic.Id).Count(&total)
+		sourceComic.ChapterCount = int(total)
+		orm.Eloquent.Save(&sourceComic)
 	}
 }
