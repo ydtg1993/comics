@@ -19,21 +19,21 @@ type MysqlManage struct {
 func (m MysqlManage) Setup() (err error) {
 	//拼接下dsn参数, dsn格式可以参考上面的语法，这里使用Sprintf动态拼接dsn参数，因为一般数据库连接参数，我们都是保存在配置文件里面，需要从配置文件加载参数，然后拼接dsn。
 	db1Dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=Local&timeout=%s&readTimeout=%s&writeTimeout=%s",
-		config.Spe.MysqlCharset,
 		config.Spe.MysqlNameWr,
 		config.Spe.MysqlPasswordWr,
 		config.Spe.MysqlHostWr,
 		config.Spe.MysqlDbName,
+		config.Spe.MysqlCharset,
 		config.Spe.Timeout,
 		config.Spe.ReadTimeout,
 		config.Spe.WriteTimeout,
 	)
 	db2Dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=%s&parseTime=True&loc=Local&timeout=%s&readTimeout=%s&writeTimeout=%s",
-		config.Spe.MysqlCharset,
 		config.Spe.MysqlNameRd,
 		config.Spe.MysqlPasswordRd,
 		config.Spe.MysqlHostRd,
 		config.Spe.MysqlDbName,
+		config.Spe.MysqlCharset,
 		config.Spe.Timeout,
 		config.Spe.ReadTimeout,
 		config.Spe.WriteTimeout,
