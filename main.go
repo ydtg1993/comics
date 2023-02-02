@@ -10,15 +10,17 @@ import (
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"runtime"
+	"strconv"
 	"sync"
 	"time"
 )
 
-const TaskStepRecord = "task:step:record"
+var TaskStepRecord = "task:step:record:"
 
 func main() {
 	Setup()
 
+	TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
 	source := controller.SourceOperate(config.Spe.SourceUrl)
 
 	go TaskComic(source)
@@ -73,7 +75,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 12)
+	t := time.NewTicker(time.Minute * 2)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -91,7 +93,7 @@ func TaskChapter(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 20)
+	t := time.NewTicker(time.Minute * 3)
 	defer t.Stop()
 	for {
 		<-t.C

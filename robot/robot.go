@@ -45,6 +45,25 @@ func ReSetUp(num int) {
 	setRob(num, lifeTime)
 }
 
+func GetRob() *Robot {
+	var Rob *Robot
+	for _, robot := range Swarm {
+		if robot.State == 1 {
+			continue
+		}
+		robot.Lock.Lock()
+		robot.State = 1
+		Rob = robot
+		break
+	}
+	return Rob
+}
+
+func ResetRob(rob *Robot) {
+	rob.State = 0
+	rob.Lock.Unlock()
+}
+
 func setRob(num int, lifeTime time.Time) {
 	for {
 		if len(Swarm) >= num {
@@ -70,25 +89,6 @@ func deleteRob() {
 		sw.Service.Stop()
 		sw.State = 1
 	}
-}
-
-func GetRob() *Robot {
-	var Rob *Robot
-	for _, robot := range Swarm {
-		if robot.State == 1 {
-			continue
-		}
-		robot.Lock.Lock()
-		robot.State = 1
-		Rob = robot
-		break
-	}
-	return Rob
-}
-
-func ResetRob(rob *Robot) {
-	rob.State = 0
-	rob.Lock.Unlock()
 }
 
 func (Robot *Robot) prepare(url string) {
