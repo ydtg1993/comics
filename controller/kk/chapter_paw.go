@@ -76,24 +76,35 @@ func ChapterPaw() {
 						sourceChapter.SourceChapterId = tools.FindStringNumber(sourceChapter.SourceUrl)
 					}
 				}
-			}
-			if sourceChapter.SourceChapterId > 0 {
-				var exists bool
-				orm.Eloquent.Model(model.SourceChapter{}).Select("count(*) > 0").Where("source = ? and comic_id = ? and source_chapter_id = ?",
-					config.Spe.SourceId,
-					sourceComic.Id,
-					sourceChapter.SourceChapterId).Find(&exists)
-				if exists == false {
-					err = orm.Eloquent.Create(&sourceChapter).Error
-					if err != nil {
-						logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+				if sourceChapter.SourceChapterId == 0 {
+					if sourceChapter.IsFree == 1 {
+						logs.Info(fmt.Sprintf("章节还没有完成购买 source = %d comic_id = %s",
 							config.Spe.SourceId,
-							sourceChapter.ComicId,
-							sourceChapter.SourceChapterId,
-							err.Error()))
+							id))
 					} else {
-						rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
+						logs.Info(fmt.Sprintf("章节id没有查找到 source = %d comic_id = %s",
+							config.Spe.SourceId,
+							id))
 					}
+					continue
+				}
+			}
+
+			var exists bool
+			orm.Eloquent.Model(model.SourceChapter{}).Select("count(*) > 0").Where("source = ? and comic_id = ? and source_chapter_id = ?",
+				config.Spe.SourceId,
+				sourceComic.Id,
+				sourceChapter.SourceChapterId).Find(&exists)
+			if exists == false {
+				err = orm.Eloquent.Create(&sourceChapter).Error
+				if err != nil {
+					logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+						config.Spe.SourceId,
+						sourceChapter.ComicId,
+						sourceChapter.SourceChapterId,
+						err.Error()))
+				} else {
+					rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
 				}
 			}
 		}

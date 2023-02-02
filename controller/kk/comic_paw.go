@@ -29,7 +29,7 @@ func ComicPaw() {
 		"日漫": 4,
 	}
 	pays := map[string]int{
-		"免费": 1,
+		//"免费": 1,
 		"付费": 2,
 	}
 	states := map[string]int{
@@ -96,7 +96,12 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 	list := content.Get("hits.topicMessageList")
 	list.ForEach(func(key, value gjson.Result) bool {
 		id, _ := strconv.Atoi(value.Get("id").String())
-
+		var exists bool
+		orm.Eloquent.Model(model.SourceComic{}).Select("count(*) > 0").
+			Where("source = ? and source_id = ?", config.Spe.SourceId, id).Find(&exists)
+		if exists == true {
+			return true
+		}
 		sourceComic := new(model.SourceComic)
 		sourceComic.Source = 1
 		sourceComic.SourceId = id
@@ -122,7 +127,7 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 			sourceComic.IsFree = 1
 		}
 
-		err := orm.Eloquent.Where("source = ? and source_id = ?", config.Spe.SourceId, id).FirstOrCreate(&sourceComic).Error
+		err := orm.Eloquent.Create(&sourceComic).Error
 		if err != nil {
 			logs.Error(fmt.Sprintf("comic数据导入失败 source = %d source_id = %d", config.Spe.SourceId, id))
 		}
