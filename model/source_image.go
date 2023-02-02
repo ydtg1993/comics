@@ -14,8 +14,8 @@ type SourceImage struct {
 	State      int           `json:"state"`
 	SourceData Images        `json:"source_data" gorm:"type:json"`
 	Images     Images        `json:"images" gorm:"type:json"`
-	CreatedAt  string        `json:"created_at"`
-	UpdatedAt  string        `json:"updated_at"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UpdatedAt  time.Time     `json:"updated_at"`
 	ChapterId  int           `json:"chapter_id"`
 	Chapter    SourceChapter `json:"chapter"`
 }
@@ -35,13 +35,13 @@ func (d *SourceImage) Create() (err error) {
 }
 
 func (ma *SourceImage) BeforeCreate(tx *gorm.DB) (err error) {
-	ma.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	ma.CreatedAt = time.Now()
+	ma.UpdatedAt = time.Now()
 	return
 }
 
 func (ma *SourceImage) BeforeUpdate(tx *gorm.DB) (err error) {
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	ma.UpdatedAt = time.Now()
 	return
 }
 

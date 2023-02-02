@@ -7,18 +7,18 @@ import (
 )
 
 type SourceChapter struct {
-	Id              int    `json:"id" gorm:"primarykey"`
-	ComicId         int    `json:"comic_id"`
-	Source          int    `json:"source"`
-	SourceChapterId int    `json:"source_chapter_id"`
-	Sort            int    `json:"sort"`
-	IsFree          int    `json:"is_free"`
-	SourceUrl       string `json:"source_url"`
-	Cover           string `json:"cover"`
-	Title           string `json:"title"`
-	SourceData      string `json:"source_data"`
-	CreatedAt       string `json:"created_at"`
-	UpdatedAt       string `json:"updated_at"`
+	Id              int       `json:"id" gorm:"primarykey"`
+	ComicId         int       `json:"comic_id"`
+	Source          int       `json:"source"`
+	SourceChapterId int       `json:"source_chapter_id"`
+	Sort            int       `json:"sort"`
+	IsFree          int       `json:"is_free"`
+	SourceUrl       string    `json:"source_url"`
+	Cover           string    `json:"cover"`
+	Title           string    `json:"title"`
+	SourceData      string    `json:"source_data"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 const SourceChapterTASK = "source:comic:chapter"
@@ -36,12 +36,12 @@ func (d *SourceChapter) Create() (err error) {
 }
 
 func (ma *SourceChapter) BeforeCreate(tx *gorm.DB) (err error) {
-	ma.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	ma.CreatedAt = time.Now()
+	ma.UpdatedAt = time.Now()
 	return
 }
 
 func (ma *SourceChapter) BeforeUpdate(tx *gorm.DB) (err error) {
-	ma.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
+	ma.UpdatedAt = time.Now()
 	return
 }

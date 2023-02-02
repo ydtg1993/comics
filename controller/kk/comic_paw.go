@@ -18,10 +18,29 @@ import (
 
 func ComicPaw() {
 	tags := map[string]int{
-		//"恋爱": 20,
-		//"古风": 46,
-		//"穿越": 80,
-		"竞技": 72,
+		"恋爱":  20,
+		"古风":  46,
+		"穿越":  80,
+		"大女主": 77,
+		"青春":  47,
+		"非人类": 92,
+		"奇幻":  22,
+		"都市":  48,
+		"总裁":  52,
+		"强剧情": 82,
+		"玄幻":  63,
+		"系统":  86,
+		"悬疑":  65,
+		"末世":  91,
+		"热血":  67,
+		"萌系":  62,
+		"搞笑":  71,
+		"重生":  89,
+		"异能":  68,
+		"冒险":  93,
+		"武侠":  85,
+		"竞技":  72,
+		"正能量": 54,
 	}
 	regions := map[string]int{
 		"国漫": 2,
@@ -96,7 +115,12 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 	list := content.Get("hits.topicMessageList")
 	list.ForEach(func(key, value gjson.Result) bool {
 		id, _ := strconv.Atoi(value.Get("id").String())
-
+		var exists bool
+		orm.Eloquent.Model(model.SourceComic{}).Select("count(*) > 0").
+			Where("source = ? and source_id = ?", config.Spe.SourceId, id).Find(&exists)
+		if exists == true {
+			return true
+		}
 		sourceComic := new(model.SourceComic)
 		sourceComic.Source = 1
 		sourceComic.SourceId = id
@@ -122,7 +146,7 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 			sourceComic.IsFree = 1
 		}
 
-		err := orm.Eloquent.Where("source = ? and source_id = ?", config.Spe.SourceId, id).FirstOrCreate(&sourceComic).Error
+		err := orm.Eloquent.Create(&sourceComic).Error
 		if err != nil {
 			logs.Error(fmt.Sprintf("comic数据导入失败 source = %d source_id = %d", config.Spe.SourceId, id))
 		}

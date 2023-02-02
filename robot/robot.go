@@ -45,6 +45,25 @@ func ReSetUp(num int) {
 	setRob(num, lifeTime)
 }
 
+func GetRob() *Robot {
+	var Rob *Robot
+	for _, robot := range Swarm {
+		if robot.State == 1 {
+			continue
+		}
+		robot.Lock.Lock()
+		robot.State = 1
+		Rob = robot
+		break
+	}
+	return Rob
+}
+
+func ResetRob(rob *Robot) {
+	rob.State = 0
+	rob.Lock.Unlock()
+}
+
 func setRob(num int, lifeTime time.Time) {
 	for {
 		if len(Swarm) >= num {
@@ -72,25 +91,6 @@ func deleteRob() {
 	}
 }
 
-func GetRob() *Robot {
-	var Rob *Robot
-	for _, robot := range Swarm {
-		if robot.State == 1 {
-			continue
-		}
-		robot.Lock.Lock()
-		robot.State = 1
-		Rob = robot
-		break
-	}
-	return Rob
-}
-
-func ResetRob(rob *Robot) {
-	rob.State = 0
-	rob.Lock.Unlock()
-}
-
 func (Robot *Robot) prepare(url string) {
 	opts := []selenium.ServiceOption{}
 	service, err := selenium.NewChromeDriverService(config.Spe.SeleniumPath, Robot.Port, opts...)
@@ -112,6 +112,8 @@ func (Robot *Robot) prepare(url string) {
 		Args: []string{
 			//"--headless",
 			//"--no-sandbox",
+			"--ignore-certificate-errors",
+			"--ignore-ssl-errors",
 			"--user-agent=" + config.Spe.UserAgent,
 		},
 	}
