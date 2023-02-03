@@ -82,4 +82,16 @@ CREATE TABLE `source_image`  (
   UNIQUE INDEX `chapter_id`(`chapter_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
+DROP TABLE IF EXISTS `fail_info`;
+CREATE TABLE `fail_info` (
+  `id` int(11) NOT NULL,
+  `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
+  `type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0漫画列表 1漫画 2章节 3图片',
+  `err` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '错误关键词',
+  `url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '地址',
+  `info` varchar(1000) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '失败信息记录',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+
 SET FOREIGN_KEY_CHECKS = 1;
