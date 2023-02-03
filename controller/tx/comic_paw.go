@@ -8,7 +8,6 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"math"
@@ -23,9 +22,18 @@ func ComicPaw() {
 		"玄幻": 101,
 		"异能": 103,
 		"恐怖": 110,
-		"剧情": 106,*/
+		"剧情": 106,
 		"科幻": 108,
 		"悬疑": 112,
+		"奇幻": 102,
+		"冒险": 104,
+		"犯罪": 111,
+		"动作": 109,
+		"日常": 113,
+		"竞技": 114,*/
+		"武侠": 115,
+		"历史": 116,
+		"战争": 117,
 	}
 	pays := map[string]int{
 		"免费": 1,
@@ -67,10 +75,10 @@ func category(tagId, payId, stateId int) {
 			total, _ := strconv.Atoi(params[1])
 			page = int(math.Ceil(float64(total) / float64(12)))
 			for {
-				if page <= 1 {
+				if page < 1 {
 					break
 				}
-				paw(bot.Clone(), tagId, payId, stateId, page)
+				paw(bot, tagId, payId, stateId, page)
 				t := time.NewTicker(time.Second * 2)
 				<-t.C
 				page--
@@ -81,7 +89,7 @@ func category(tagId, payId, stateId int) {
 	t := time.NewTicker(time.Second * 2)
 	<-t.C
 	if err != nil {
-		logs.Error("无法抓取页:" + url)
+		model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
 	}
 }
 
@@ -122,7 +130,8 @@ func paw(bot *colly.Collector, tagId, payId, stateId, page int) {
 		}
 		err := orm.Eloquent.Create(&sourceComic).Error
 		if err != nil {
-			logs.Error(fmt.Sprintf("comic数据导入失败 source = %d source_id = %d", config.Spe.SourceId, id))
+			msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d", config.Spe.SourceId, id)
+			model.RecordFail(url, msg, "漫画入库", 1)
 		} else {
 			rd.RPush(model.SourceComicTASK, sourceComic.Id)
 		}
@@ -130,10 +139,8 @@ func paw(bot *colly.Collector, tagId, payId, stateId, page int) {
 
 	for i := 0; i < 3; i++ {
 		err := bot.Visit(url)
-		t := time.NewTicker(time.Second * 2)
-		<-t.C
 		if err != nil && i == 3 {
-			logs.Error("无法抓取分类列表页Dom:" + url)
+			model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
 		} else {
 			break
 		}

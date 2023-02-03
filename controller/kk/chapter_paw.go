@@ -8,7 +8,6 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/tebeka/selenium"
 	"time"
 )
@@ -29,7 +28,6 @@ func ChapterPaw() {
 
 		var sourceComic model.SourceComic
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceComic).Error; err != nil {
-			logs.Info("未找到comic_id=" + id)
 			continue
 		}
 		rob.WebDriver.Get(sourceComic.SourceUrl)
@@ -39,9 +37,10 @@ func ChapterPaw() {
 		<-t.C
 		listElements, err := rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
 		if err != nil {
-			logs.Error(fmt.Sprintf("未找到章节列表TopicItem source = %d comic_id = %s err = %s",
+			msg := fmt.Sprintf("章节列表未找到 source = %d comic_id = %s comic_url = %s err = %s",
 				config.Spe.SourceId,
-				id, err.Error()))
+				id, sourceComic.SourceUrl, err.Error())
+			model.RecordFail(sourceComic.SourceUrl, msg, "章节列表未找到", 2)
 			robot.ReSetUp(config.Spe.Maxthreads)
 			return
 		}
@@ -78,13 +77,15 @@ func ChapterPaw() {
 				}
 				if sourceChapter.SourceChapterId == 0 {
 					if sourceChapter.IsFree == 1 {
-						logs.Info(fmt.Sprintf("章节还没有完成购买 source = %d comic_id = %s",
+						msg := fmt.Sprintf("章节还没有完成购买 source = %d comic_id = %s chapter_url = %s",
 							config.Spe.SourceId,
-							id))
+							id, sourceChapter.SourceUrl)
+						model.RecordFail(sourceChapter.SourceUrl, msg, "章节没有购买", 2)
 					} else {
-						logs.Info(fmt.Sprintf("章节id没有查找到 source = %d comic_id = %s",
+						msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %s chapter_url = %s",
 							config.Spe.SourceId,
-							id))
+							id, sourceChapter.SourceUrl)
+						model.RecordFail(sourceChapter.SourceUrl, msg, "章节id没有查找到", 2)
 					}
 					continue
 				}
@@ -98,11 +99,12 @@ func ChapterPaw() {
 			if exists == false {
 				err = orm.Eloquent.Create(&sourceChapter).Error
 				if err != nil {
-					logs.Error(fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+					msg := fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_url = %s err = %s",
 						config.Spe.SourceId,
 						sourceChapter.ComicId,
-						sourceChapter.SourceChapterId,
-						err.Error()))
+						sourceChapter.SourceUrl,
+						err.Error())
+					model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节入库错误", 2)
 				} else {
 					rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
 				}

@@ -24,11 +24,11 @@ func main() {
 	rd.Delete(TaskStepRecord)
 	source := controller.SourceOperate(config.Spe.SourceUrl)
 
-	//go TaskComic(source)
+	go TaskComic(source)
 
-	TaskChapter(source)
+	go TaskChapter(source)
 
-	//TaskImage(source)
+	TaskImage(source)
 }
 
 func Setup() {
@@ -76,7 +76,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Second * 1)
+	t := time.NewTicker(time.Minute * 10)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -94,7 +94,7 @@ func TaskChapter(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 25)
+	t := time.NewTicker(time.Minute * 20)
 	defer t.Stop()
 	for {
 		<-t.C

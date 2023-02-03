@@ -7,7 +7,6 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"github.com/tidwall/gjson"
@@ -100,7 +99,7 @@ func category(tagId, regionId, payId, stateId, sort int) {
 	})
 	err := bot.Visit(url)
 	if err != nil {
-		logs.Error("无法抓取分类列表页Dom:" + url)
+		model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
 	}
 }
 
@@ -148,7 +147,8 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 
 		err := orm.Eloquent.Create(&sourceComic).Error
 		if err != nil {
-			logs.Error(fmt.Sprintf("comic数据导入失败 source = %d source_id = %d", config.Spe.SourceId, id))
+			msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d", config.Spe.SourceId, id)
+			model.RecordFail(url, msg, "漫画入库", 1)
 		}
 		rd.RPush(model.SourceComicTASK, sourceComic.Id)
 		return true

@@ -9,7 +9,6 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/tebeka/selenium"
 	"math"
 	"strconv"
@@ -31,7 +30,6 @@ func ImagePaw() {
 		}
 		var sourceChapter model.SourceChapter
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceChapter).Error; err != nil {
-			logs.Info("未找到chapter id=" + id)
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
@@ -41,9 +39,13 @@ func ImagePaw() {
 		for tryLimit := 0; tryLimit < 3; tryLimit++ {
 			imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
 			if err != nil {
-				logs.Error(fmt.Sprintf("未找到图片列表Dom: comic-contain source = %d chapter_url = %s err = %s",
+				msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
 					config.Spe.SourceId,
-					sourceChapter.SourceUrl, err.Error()))
+					sourceChapter.ComicId,
+					sourceChapter.Id,
+					sourceChapter.SourceUrl,
+					err.Error())
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到 重启机器人", 3)
 				robot.ReSetUp(config.Spe.Maxthreads)
 				return
 			}
@@ -106,11 +108,12 @@ function toBottom(){
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
-				logs.Error(fmt.Sprintf("image数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+				msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
-					err.Error()))
+					err.Error())
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
 			}
 		} else {
 			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
@@ -119,11 +122,12 @@ function toBottom(){
 				"state":       sourceImage.State,
 			}).Error
 			if err != nil {
-				logs.Error(fmt.Sprintf("image数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
+				msg := fmt.Sprintf("图片数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
-					err.Error()))
+					err.Error())
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
 			}
 		}
 	}

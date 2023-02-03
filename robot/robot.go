@@ -21,10 +21,10 @@ type Robot struct {
 }
 
 func SetUp(num int) {
-	lifeTime := time.Now().Add(time.Hour * 2)
+	lifeTime := time.Now().Add(time.Hour * 6)
 	setRob(num, lifeTime)
 
-	t := time.NewTicker(time.Minute * 15)
+	t := time.NewTicker(time.Minute * 25)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -41,7 +41,7 @@ func SetUp(num int) {
 
 func ReSetUp(num int) {
 	deleteRob()
-	lifeTime := time.Now().Add(time.Hour * 2)
+	lifeTime := time.Now().Add(time.Hour * 6)
 	setRob(num, lifeTime)
 }
 

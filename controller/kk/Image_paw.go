@@ -8,7 +8,6 @@ import (
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/tebeka/selenium"
 	"strconv"
 	"time"
@@ -29,7 +28,6 @@ func ImagePaw() {
 		}
 		var sourceChapter model.SourceChapter
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceChapter).Error; err != nil {
-			logs.Info(fmt.Sprintf("未找到chapter_id = %s source = %d", id, config.Spe.SourceId))
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
@@ -40,26 +38,37 @@ func ImagePaw() {
 
 		imgList, err := rob.WebDriver.FindElements(selenium.ByClassName, "img-box")
 		if err != nil {
-			logs.Error(fmt.Sprintf("未找到图片列表Dom: imgList source = %d chapter_id = %s err = %s",
+			msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
 				config.Spe.SourceId,
-				id, err.Error()))
-			robot.ReSetUp(config.Spe.Maxthreads)
+				sourceChapter.ComicId,
+				sourceChapter.Id,
+				sourceChapter.SourceUrl,
+				err.Error())
+			model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到 重启机器人", 3)
 			return
 		}
 		var sourceImage model.SourceImage
+		sourceImage.Images = model.Images{}
 		for _, img := range imgList {
 			dom, err := img.FindElement(selenium.ByClassName, "img")
-			if err != nil {
-				logs.Error("无法抓取图片页Dom: img " + sourceChapter.SourceUrl)
+			if err == nil {
+				img, err := dom.GetAttribute("data-src")
+				if err == nil {
+					sourceImage.SourceData = append(sourceImage.SourceData, img)
+				}
 			}
-			img, err := dom.GetAttribute("data-src")
-			if err != nil {
-				logs.Error("无法抓取图片页Dom: img attr " + sourceChapter.SourceUrl)
-			}
-			sourceImage.SourceData = append(sourceImage.SourceData, img)
+		}
+		if len(sourceImage.SourceData) == 0 {
+			msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
+				config.Spe.SourceId,
+				sourceChapter.ComicId,
+				sourceChapter.Id,
+				sourceChapter.SourceUrl,
+				err.Error())
+			model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+			continue
 		}
 		sourceImage.ChapterId, _ = strconv.Atoi(id)
-		sourceImage.Images = model.Images{}
 		cookies, _ := rob.WebDriver.GetCookies()
 		download(
 			sourceChapter.ComicId,
@@ -71,11 +80,12 @@ func ImagePaw() {
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
-				logs.Error(fmt.Sprintf("image数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+				msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
-					err.Error()))
+					err.Error())
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
 			}
 		} else {
 			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
@@ -84,11 +94,12 @@ func ImagePaw() {
 				"state":       sourceImage.State,
 			}).Error
 			if err != nil {
-				logs.Error(fmt.Sprintf("image数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
+				msg := fmt.Sprintf("图片数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
-					err.Error()))
+					err.Error())
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
 			}
 		}
 	}
