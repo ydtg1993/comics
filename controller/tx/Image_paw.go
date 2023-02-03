@@ -22,7 +22,7 @@ func ImagePaw() {
 		return
 	}
 	defer robot.ResetRob(rob)
-	rob.WebDriver.ResizeWindow("", 1400, 900)
+
 	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceChapterTASK)
@@ -35,24 +35,28 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
-		imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
-		if err != nil {
-			logs.Error(fmt.Sprintf("未找到图片列表Dom: comic-contain source = %d chapter_url = %s err = %s",
-				config.Spe.SourceId,
-				sourceChapter.SourceUrl, err.Error()))
-			robot.ReSetUp(config.Spe.Maxthreads)
-			return
-		}
-		var arg []interface{}
-		wait := 10
-		vh, err := rob.WebDriver.ExecuteScript(`return document.getElementById("comicContain").clientHeight`, arg)
-		if err == nil {
-			vhi, err := strconv.Atoi(tools.UnknowToString(vh))
-			if err == nil {
-				wait = int(math.Ceil(float64(vhi) / float64(1000)))
+
+		var sourceImage model.SourceImage
+		sourceImage.Images = model.Images{}
+		for tryLimit := 0; tryLimit < 3; tryLimit++ {
+			imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
+			if err != nil {
+				logs.Error(fmt.Sprintf("未找到图片列表Dom: comic-contain source = %d chapter_url = %s err = %s",
+					config.Spe.SourceId,
+					sourceChapter.SourceUrl, err.Error()))
+				robot.ReSetUp(config.Spe.Maxthreads)
+				return
 			}
-		}
-		rob.WebDriver.ExecuteScript(`
+			var arg []interface{}
+			wait := 30
+			vh, err := rob.WebDriver.ExecuteScript(`return document.getElementById("comicContain").clientHeight`, arg)
+			if err == nil {
+				vhi, err := strconv.Atoi(tools.UnknowToString(vh))
+				if err == nil {
+					wait = int(math.Ceil(float64(vhi) / float64(1000)))
+				}
+			}
+			rob.WebDriver.ExecuteScript(`
 let f = setInterval(toBottom,500);
 function toBottom(){
  let dom = document.getElementById("mainView")
@@ -66,31 +70,36 @@ function toBottom(){
   }
 }
 `, arg)
-		t := time.NewTicker(time.Second * time.Duration(wait))
-		<-t.C
+			t := time.NewTicker(time.Second * time.Duration(wait))
+			<-t.C
 
-		var sourceImage model.SourceImage
-		imageList, _ := imgContain.FindElements(selenium.ByTagName, "li")
-		for _, image := range imageList {
-			class, err := image.GetAttribute("class")
-			if err == nil && class == "main_ad_top" {
-				continue
+			imageList, _ := imgContain.FindElements(selenium.ByTagName, "li")
+			for _, image := range imageList {
+				class, err := image.GetAttribute("class")
+				if err == nil && class == "main_ad_top" {
+					continue
+				}
+				img, err := image.FindElement(selenium.ByTagName, "img")
+				if err != nil {
+					continue
+				}
+				source, _ := img.GetAttribute("src")
+				sourceImage.SourceData = append(sourceImage.SourceData, source)
 			}
-			img, err := image.FindElement(selenium.ByTagName, "img")
-			if err != nil {
-				continue
+			sourceImage.ChapterId, _ = strconv.Atoi(id)
+			cookies, _ := rob.WebDriver.GetCookies()
+			download(
+				sourceChapter.ComicId,
+				&sourceImage,
+				cookies, sourceImage.SourceData)
+			if len(sourceImage.Images) > 0 {
+				break
+			} else {
+				rob.WebDriver.Refresh()
+				t := time.NewTicker(time.Second * 2)
+				<-t.C
 			}
-			source, _ := img.GetAttribute("src")
-			sourceImage.SourceData = append(sourceImage.SourceData, source)
 		}
-		sourceImage.ChapterId, _ = strconv.Atoi(id)
-
-		sourceImage.Images = model.Images{}
-		cookies, _ := rob.WebDriver.GetCookies()
-		download(
-			sourceChapter.ComicId,
-			&sourceImage,
-			cookies, sourceImage.SourceData)
 
 		var exists bool
 		orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).First(&exists)
@@ -125,9 +134,8 @@ func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Co
 	for _, cookie := range cookies {
 		ck[cookie.Name] = cookie.Value
 	}
+	dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, sourceImage.ChapterId)
 	for key, img := range images {
-		dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, sourceImage.ChapterId)
-
 		state := 0
 		for i := 0; i < 3; i++ {
 			file := common.DownFile(img, dir, fmt.Sprintf("%d.jpg", key), ck)

@@ -14,6 +14,7 @@ import (
 	"math"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 func ComicPaw() {
@@ -69,14 +70,18 @@ func category(tagId, payId, stateId int) {
 				if page <= 1 {
 					break
 				}
-				paw(bot, tagId, payId, stateId, page)
+				paw(bot.Clone(), tagId, payId, stateId, page)
+				t := time.NewTicker(time.Second * 2)
+				<-t.C
 				page--
 			}
 		}
 	})
 	err := bot.Visit(url)
+	t := time.NewTicker(time.Second * 2)
+	<-t.C
 	if err != nil {
-		logs.Error("无法抓取分类列表页Dom:" + url)
+		logs.Error("无法抓取页:" + url)
 	}
 }
 
@@ -123,8 +128,14 @@ func paw(bot *colly.Collector, tagId, payId, stateId, page int) {
 		}
 	})
 
-	err := bot.Visit(url)
-	if err != nil {
-		logs.Error("无法抓取分类列表页Dom:" + url)
+	for i := 0; i < 3; i++ {
+		err := bot.Visit(url)
+		t := time.NewTicker(time.Second * 2)
+		<-t.C
+		if err != nil && i == 3 {
+			logs.Error("无法抓取分类列表页Dom:" + url)
+		} else {
+			break
+		}
 	}
 }

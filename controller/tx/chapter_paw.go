@@ -30,12 +30,18 @@ func ChapterPaw() {
 
 		var sourceComic model.SourceComic
 		if err := orm.Eloquent.Where("id = ?", id).First(&sourceComic).Error; err != nil {
-			logs.Info("未找到comic id=" + id)
+			logs.Info("未找到comic_id=" + id)
 			continue
 		}
 		rob.WebDriver.Get(sourceComic.SourceUrl)
 		t := time.NewTicker(time.Second * 2)
 		<-t.C
+		_, check := rob.WebDriver.FindElement(selenium.ByXPATH, "//*[@id='special_bg']")
+		if check != nil {
+			logs.Info(fmt.Sprintf("未找到漫画详情页内容 source = %d comic_id = %s source_url = %s",
+				config.Spe.SourceId, id, sourceComic.SourceUrl))
+			continue
+		}
 		var arg []interface{}
 		rob.WebDriver.ExecuteScript(`
 let mouseoverEvent = new Event('mouseover');

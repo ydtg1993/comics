@@ -124,7 +124,7 @@ func (Robot *Robot) prepare(url string) {
 		fmt.Println(err.Error())
 		return
 	}
-
+	wb.ResizeWindow("", 1400, 900)
 	err = wb.Get(url)
 	if err != nil {
 		fmt.Println(err.Error())

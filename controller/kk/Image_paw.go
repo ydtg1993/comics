@@ -99,9 +99,8 @@ func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Co
 	for _, cookie := range cookies {
 		ck[cookie.Name] = cookie.Value
 	}
+	dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, sourceImage.ChapterId)
 	for key, img := range images {
-		dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, sourceImage.ChapterId)
-
 		state := 0
 		for i := 0; i < 3; i++ {
 			file := common.DownFile(img, dir, fmt.Sprintf("%d.webp", key), ck)
