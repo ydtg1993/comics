@@ -5,11 +5,13 @@ import (
 	"comics/global/orm"
 	"comics/model"
 	"comics/robot"
+	"comics/tools"
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/tebeka/selenium"
+	"math"
 	"strconv"
 	"time"
 )
@@ -20,7 +22,7 @@ func ImagePaw() {
 		return
 	}
 	defer robot.ResetRob(rob)
-
+	rob.WebDriver.ResizeWindow("", 1400, 900)
 	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceChapterTASK)
@@ -42,7 +44,15 @@ func ImagePaw() {
 			return
 		}
 		var arg []interface{}
-		rob.WebDriver.ExecuteScriptAsync(`
+		wait := 10
+		vh, err := rob.WebDriver.ExecuteScript(`return document.getElementById("comicContain").clientHeight`, arg)
+		if err == nil {
+			vhi, err := strconv.Atoi(tools.UnknowToString(vh))
+			if err == nil {
+				wait = int(math.Ceil(float64(vhi) / float64(1000)))
+			}
+		}
+		rob.WebDriver.ExecuteScript(`
 let f = setInterval(toBottom,500);
 function toBottom(){
  let dom = document.getElementById("mainView")
@@ -50,14 +60,13 @@ function toBottom(){
  const clientHeight = dom.clientHeight; 
  const scrollHeight = dom.scrollHeight; 
  if (scrollHeight - 10 > currentScroll + clientHeight) {
- dom.scrollTo({'left':0,'top': currentScroll + 800,behavior: 'smooth'})
+ 	 dom.scrollTo({'left':0,'top': currentScroll + 800,behavior: 'smooth'})
   }else{
 	 clearInterval(f)
-     return "ok"
   }
 }
 `, arg)
-		t := time.NewTicker(time.Second * 10)
+		t := time.NewTicker(time.Second * time.Duration(wait))
 		<-t.C
 
 		var sourceImage model.SourceImage
