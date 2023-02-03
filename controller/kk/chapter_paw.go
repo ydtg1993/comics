@@ -13,7 +13,7 @@ import (
 )
 
 func ChapterPaw() {
-	rob := robot.GetRob()
+	rob := robot.GetRob([]int{0, 2, 4})
 	if rob == nil {
 		return
 	}

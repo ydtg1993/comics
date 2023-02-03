@@ -14,7 +14,7 @@ import (
 )
 
 func ImagePaw() {
-	rob := robot.GetRob()
+	rob := robot.GetRob([]int{})
 	if rob == nil {
 		return
 	}

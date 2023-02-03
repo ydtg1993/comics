@@ -1,6 +1,7 @@
 package robot
 
 import (
+	"comics/tools"
 	"comics/tools/config"
 	"fmt"
 	"github.com/tebeka/selenium"
@@ -45,9 +46,15 @@ func ReSetUp(num int) {
 	setRob(num, lifeTime)
 }
 
-func GetRob() *Robot {
+func GetRob(keys []int) *Robot {
 	var Rob *Robot
-	for _, robot := range Swarm {
+	for k, robot := range Swarm {
+		if len(keys) > 0 {
+			exists, _ := tools.InArray(k, keys)
+			if exists == false {
+				continue
+			}
+		}
 		if robot.State == 1 {
 			continue
 		}
