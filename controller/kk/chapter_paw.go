@@ -27,7 +27,7 @@ func ChapterPaw() {
 		}
 
 		var sourceComic model.SourceComic
-		if err := orm.Eloquent.Where("id = ?", id).First(&sourceComic).Error; err != nil {
+		if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 			continue
 		}
 		rob.WebDriver.Get(sourceComic.SourceUrl)

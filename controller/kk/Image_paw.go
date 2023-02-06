@@ -27,7 +27,7 @@ func ImagePaw() {
 			return
 		}
 		var sourceChapter model.SourceChapter
-		if err := orm.Eloquent.Where("id = ?", id).First(&sourceChapter).Error; err != nil {
+		if orm.Eloquent.Where("id = ?", id).First(&sourceChapter); sourceChapter.Id == 0 {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
