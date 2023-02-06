@@ -22,7 +22,7 @@ func ImagePaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 50
+	taskLimit := 70
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(model.SourceChapterTASK)
 		if err != nil || id == "" {
@@ -33,10 +33,9 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
-		rob.WebDriver.Close()
-		rob.Service.Stop()
 		var sourceImage model.SourceImage
 		sourceImage.Images = model.Images{}
+
 		for tryLimit := 0; tryLimit < 3; tryLimit++ {
 			imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
 			if err != nil {
@@ -46,9 +45,11 @@ func ImagePaw() {
 					sourceChapter.Id,
 					sourceChapter.SourceUrl,
 					err.Error())
-				model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
-				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
-				return
+				if tryLimit == 2 {
+					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+					rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
+				}
+				continue
 			}
 			var arg []interface{}
 			wait := 30
@@ -56,7 +57,7 @@ func ImagePaw() {
 			if err == nil {
 				vhi, err := strconv.Atoi(tools.UnknowToString(vh))
 				if err == nil {
-					wait = int(math.Ceil(float64(vhi) / float64(1000)))
+					wait = int(math.Ceil(float64(vhi) / float64(1200)))
 				}
 			}
 			rob.WebDriver.ExecuteScript(`

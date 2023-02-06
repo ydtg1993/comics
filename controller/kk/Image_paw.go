@@ -31,51 +31,62 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
-		var arg []interface{}
-		rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
-		t := time.NewTicker(time.Second * 2)
-		<-t.C
-
-		imgList, err := rob.WebDriver.FindElements(selenium.ByClassName, "img-box")
-		if err != nil {
-			msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
-				config.Spe.SourceId,
-				sourceChapter.ComicId,
-				sourceChapter.Id,
-				sourceChapter.SourceUrl,
-				err.Error())
-			model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
-			rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
-			return
-		}
 		var sourceImage model.SourceImage
 		sourceImage.Images = model.Images{}
-		for _, img := range imgList {
-			dom, err := img.FindElement(selenium.ByClassName, "img")
-			if err == nil {
-				img, err := dom.GetAttribute("data-src")
+
+		for tryLimit := 0; tryLimit < 3; tryLimit++ {
+			var arg []interface{}
+			rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
+			imgList, err := rob.WebDriver.FindElements(selenium.ByClassName, "img-box")
+			if err != nil {
+				msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
+					config.Spe.SourceId,
+					sourceChapter.ComicId,
+					sourceChapter.Id,
+					sourceChapter.SourceUrl,
+					err.Error())
+				if tryLimit == 2 {
+					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+					rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
+				}
+				continue
+			}
+			for _, img := range imgList {
+				dom, err := img.FindElement(selenium.ByClassName, "img")
 				if err == nil {
-					sourceImage.SourceData = append(sourceImage.SourceData, img)
+					img, err := dom.GetAttribute("data-src")
+					if err == nil {
+						sourceImage.SourceData = append(sourceImage.SourceData, img)
+					}
 				}
 			}
-		}
-		if len(sourceImage.SourceData) == 0 {
-			msg := fmt.Sprintf("未找到懒加载图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
-				config.Spe.SourceId,
+			if len(sourceImage.SourceData) == 0 {
+				msg := fmt.Sprintf("未找到懒加载图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
+					config.Spe.SourceId,
+					sourceChapter.ComicId,
+					sourceChapter.Id,
+					sourceChapter.SourceUrl,
+					err.Error())
+				if tryLimit == 2 {
+					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+					rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
+				}
+				continue
+			}
+			sourceImage.ChapterId, _ = strconv.Atoi(id)
+			cookies, _ := rob.WebDriver.GetCookies()
+			download(
 				sourceChapter.ComicId,
-				sourceChapter.Id,
-				sourceChapter.SourceUrl,
-				err.Error())
-			model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
-			rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
-			continue
+				&sourceImage,
+				cookies, sourceImage.SourceData)
+			if len(sourceImage.Images) > 0 {
+				break
+			} else {
+				rob.WebDriver.Refresh()
+				t := time.NewTicker(time.Second * 2)
+				<-t.C
+			}
 		}
-		sourceImage.ChapterId, _ = strconv.Atoi(id)
-		cookies, _ := rob.WebDriver.GetCookies()
-		download(
-			sourceChapter.ComicId,
-			&sourceImage,
-			cookies, sourceImage.SourceData)
 
 		var exists bool
 		orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).First(&exists)
@@ -106,6 +117,8 @@ func ImagePaw() {
 				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 			}
 		}
+		t := time.NewTicker(time.Second * 2)
+		<-t.C
 	}
 }
 

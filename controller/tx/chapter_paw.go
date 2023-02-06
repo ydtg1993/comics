@@ -47,7 +47,6 @@ func ChapterPaw() {
 		rob.WebDriver.ExecuteScript(`
 let mouseoverEvent = new Event('mouseover');
 document.getElementsByClassName("chapter-page-btn-all")[0].dispatchEvent(mouseoverEvent);
-
 `, arg)
 		elms, _ := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".chapter-page-more>a")
 		if len(elms) == 0 {
@@ -59,11 +58,36 @@ document.getElementsByClassName("chapter-page-btn-all")[0].dispatchEvent(mouseov
 			<-t.C
 			getChapter(&sourceComic, rob)
 		}
+
+		detail, err := rob.WebDriver.FindElement(selenium.ByCSSSelector, ".works-intro-short")
+		if err == nil {
+			sourceComic.Description, _ = detail.Text()
+		}
+		tags, err := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".works-intro-tags-item")
+		if err == nil && len(tags) > 0 {
+			for _, tag := range tags {
+				tagString, err := tag.Text()
+				if err == nil {
+					sourceComic.Category = append(sourceComic.Category, tagString)
+				}
+			}
+		}
+		like, err := rob.WebDriver.FindElement(selenium.ByCSSSelector, "#redcount")
+		if err == nil {
+			sourceComic.LikeCount, _ = like.Text()
+		}
+		var total int64
+		orm.Eloquent.Model(model.SourceChapter{}).Where("comic_id = ?", sourceComic.Id).Count(&total)
+		sourceComic.ChapterCount = int(total)
+		orm.Eloquent.Save(&sourceComic)
 	}
 }
 
 func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
-	elms, _ := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".chapter-page-all .works-chapter-item")
+	elms, err := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".chapter-page-all .works-chapter-item")
+	if err != nil {
+		return
+	}
 	if len(elms) == 0 {
 		return
 	}

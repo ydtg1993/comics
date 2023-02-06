@@ -4,12 +4,12 @@ import (
 	"comics/common"
 	"comics/global/orm"
 	"comics/model"
+	"comics/tools"
 	"comics/tools/config"
 	"comics/tools/rd"
 	"fmt"
-	"github.com/gocolly/colly"
-	"github.com/gocolly/colly/extensions"
 	"github.com/tidwall/gjson"
+	"math"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -59,7 +59,13 @@ func ComicPaw() {
 			for pay, payId := range pays {
 				for state, stateId := range states {
 					fmt.Printf("%s %s %s %s \n", tag, region, pay, state)
-					category(tagId, regionId, payId, stateId, 1)
+					kk := common.Kind{
+						Tag:    common.Kv{Name: tag, Val: tagId},
+						Region: common.Kv{Name: region, Val: regionId},
+						Pay:    common.Kv{Name: pay, Val: payId},
+						State:  common.Kv{Name: state, Val: stateId},
+					}
+					category(kk, 1)
 				}
 			}
 		}
@@ -67,45 +73,36 @@ func ComicPaw() {
 }
 
 func ComicUpdate() {
-	category(0, 1, 0, 0, 3)
-	//章节更新监测 TODO
+	kk := common.Kind{
+		Tag:    common.Kv{Name: "", Val: 0},
+		Region: common.Kv{Name: "", Val: 1},
+		Pay:    common.Kv{Name: "", Val: 0},
+		State:  common.Kv{Name: "", Val: 0},
+	}
+	category(kk, 3)
 }
 
-func category(tagId, regionId, payId, stateId, sort int) {
-	bot := colly.NewCollector(
-		colly.AllowedDomains(config.Spe.SourceUrl),
-	)
-	extensions.RandomUserAgent(bot)
-	extensions.Referer(bot)
-
-	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/tag/%d?region=%d&pays=%d&state=%d&sort=1&page=1",
-		tagId, regionId, payId, stateId)
-	lastPage := 1
-	bot.OnHTML("ul.pagination", func(e *colly.HTMLElement) {
-		page := e.DOM.Find(".itemBten").Last().Text()
-		if page != "" {
-			lastPage, _ = strconv.Atoi(strings.TrimSpace(page))
-		}
-		for {
-			if lastPage <= 1 {
-				break
-			}
-			paw(tagId, regionId, payId, stateId, sort, lastPage)
-			lastPage--
-		}
-	})
-	bot.OnResponse(func(r *colly.Response) {
-		paw(tagId, regionId, payId, stateId, sort, 1)
-	})
-	err := bot.Visit(url)
+func category(kk common.Kind, sort int) {
+	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=%d&page=%d&size=48",
+		kk.Tag.Val, kk.Region.Val, kk.Pay.Val, kk.State.Val, sort, 1)
+	content, err := common.RequestApi(url, "GET", "", 7)
 	if err != nil {
-		model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
+		return
+	}
+	total := tools.FindStringNumber(content.Get("total").String())
+	page := int(math.Ceil(float64(total) / float64(48)))
+	for {
+		if page < 1 {
+			break
+		}
+		paw(kk, sort, page)
+		page--
 	}
 }
 
-func paw(tagId, regionId, payId, stateId, sort, page int) {
+func paw(kk common.Kind, sort, page int) {
 	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=%d&page=%d&size=48",
-		tagId, regionId, payId, stateId, sort, page)
+		kk.Tag.Val, kk.Region.Val, kk.Pay.Val, kk.State.Val, sort, page)
 	content, err := common.RequestApi(url, "GET", "", 3)
 	if err != nil {
 		return
@@ -137,14 +134,12 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 			sourceComic.Category = append(sourceComic.Category, v.Str)
 		}
 		sourceComic.Author = value.Get("author_name").String()
-		sourceComic.LikeCount = value.Get("likes_count").String()
-		sourceComic.Popularity = value.Get("popularity").String()
 		sourceComic.IsFree = 0
 		sourceComic.SourceData = value.String()
 		if value.Get("is_free").Bool() == false {
 			sourceComic.IsFree = 1
 		}
-		if stateId == 2 {
+		if kk.State.Val == 2 {
 			sourceComic.IsFinish = 1
 		}
 		err := orm.Eloquent.Create(&sourceComic).Error

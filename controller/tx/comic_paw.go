@@ -47,7 +47,12 @@ func ComicPaw() {
 		for pay, payId := range pays {
 			for state, stateId := range states {
 				fmt.Printf("%s %s %s \n", tag, pay, state)
-				category(tagId, payId, stateId)
+				tx := common.Kind{
+					Tag:   common.Kv{Name: tag, Val: tagId},
+					Pay:   common.Kv{Name: pay, Val: payId},
+					State: common.Kv{Name: state, Val: stateId},
+				}
+				category(tx)
 			}
 		}
 	}
@@ -57,7 +62,7 @@ func ComicUpdate() {
 
 }
 
-func category(tagId, payId, stateId int) {
+func category(tx common.Kind) {
 	bot := colly.NewCollector(
 		colly.AllowedDomains(config.Spe.SourceUrl),
 	)
@@ -65,7 +70,7 @@ func category(tagId, payId, stateId int) {
 	extensions.Referer(bot)
 
 	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/Comic/all/theme/%d/finish/%d/search/time/vip/%d/page/1",
-		tagId, stateId, payId)
+		tx.Tag.Val, tx.State.Val, tx.Pay.Val)
 
 	page := 1
 	bot.OnResponse(func(r *colly.Response) {
@@ -78,7 +83,7 @@ func category(tagId, payId, stateId int) {
 				if page < 1 {
 					break
 				}
-				paw(bot, tagId, payId, stateId, page)
+				paw(bot, tx, page)
 				t := time.NewTicker(time.Second * 2)
 				<-t.C
 				page--
@@ -93,9 +98,9 @@ func category(tagId, payId, stateId int) {
 	}
 }
 
-func paw(bot *colly.Collector, tagId, payId, stateId, page int) {
+func paw(bot *colly.Collector, tx common.Kind, page int) {
 	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/Comic/all/theme/%d/finish/%d/search/time/vip/%d/page/%d",
-		tagId, stateId, payId, page)
+		tx.Tag.Val, tx.State.Val, tx.Pay.Val, page)
 
 	bot.OnHTML("li.ret-search-item", func(e *colly.HTMLElement) {
 		info := e.DOM.Find(".ret-works-info")
@@ -103,8 +108,8 @@ func paw(bot *colly.Collector, tagId, payId, stateId, page int) {
 		url, _ := info.Find(".ret-works-title>a").Attr("href")
 		id := tools.FindStringNumber(url)
 		author := info.Find(".ret-works-author").Text()
-		description := info.Find(".ret-works-decs").Text()
 		cover, _ := e.DOM.Find(".ret-works-cover img.lazy").Attr("data-original")
+		popularity := e.DOM.Find(".ret-works-tags span").Last().Find("em").Text()
 
 		var exists bool
 		orm.Eloquent.Model(model.SourceComic{}).Select("count(*) > 0").
@@ -119,10 +124,10 @@ func paw(bot *colly.Collector, tagId, payId, stateId, page int) {
 		sourceComic.Title = title
 		sourceComic.Cover = cover
 		sourceComic.Author = author
-		sourceComic.Description = description
+		sourceComic.Category = model.Category{tx.Tag.Name}
 		sourceComic.LikeCount = ""
-		sourceComic.Popularity = ""
-		if stateId == 2 {
+		sourceComic.Popularity = popularity
+		if tx.State.Val == 2 {
 			sourceComic.IsFinish = 1
 		}
 		var cookies map[string]string
