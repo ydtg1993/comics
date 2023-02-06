@@ -59,7 +59,66 @@ func ComicPaw() {
 }
 
 func ComicUpdate() {
+	bot := colly.NewCollector(
+		colly.AllowedDomains(config.Spe.SourceUrl),
+	)
+	extensions.RandomUserAgent(bot)
+	extensions.Referer(bot)
 
+	for page := 1; page < 13; page++ {
+		url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/Comic/all/search/time/page/%d",
+			page)
+
+		bot.OnHTML("li.ret-search-item", func(e *colly.HTMLElement) {
+			info := e.DOM.Find(".ret-works-info")
+			title := info.Find(".ret-works-title>a").Text()
+			url, _ := info.Find(".ret-works-title>a").Attr("href")
+			id := tools.FindStringNumber(url)
+			author := info.Find(".ret-works-author").Text()
+			cover, _ := e.DOM.Find(".ret-works-cover img.lazy").Attr("data-original")
+			popularity := e.DOM.Find(".ret-works-tags span").Last().Find("em").Text()
+
+			var exists bool
+			orm.Eloquent.Model(model.SourceComic{}).Select("count(*) > 0").
+				Where("source = ? and source_id = ?", config.Spe.SourceId, id).Find(&exists)
+			if exists == true {
+				return
+			}
+			sourceComic := new(model.SourceComic)
+			sourceComic.Source = config.Spe.SourceId
+			sourceComic.SourceId = id
+			sourceComic.SourceUrl = "https://" + config.Spe.SourceUrl + url
+			sourceComic.Title = title
+			sourceComic.Cover = cover
+			sourceComic.Author = author
+			sourceComic.Category = model.Category{}
+			sourceComic.LikeCount = ""
+			sourceComic.Popularity = popularity
+
+			var cookies map[string]string
+			dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d", id%10)
+			downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", cookies)
+			if downCover != "" {
+				sourceComic.Cover = downCover
+			}
+			err := orm.Eloquent.Create(&sourceComic).Error
+			if err != nil {
+				msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d", config.Spe.SourceId, id)
+				model.RecordFail(url, msg, "漫画入库", 1)
+			} else {
+				rd.RPush(model.SourceComicTASK, sourceComic.Id)
+			}
+		})
+
+		for i := 0; i < 3; i++ {
+			err := bot.Visit(url)
+			if err != nil && i == 3 {
+				model.RecordFail(url, "无法抓取分类列表页信息 :"+url, "列表错误", 0)
+			} else {
+				break
+			}
+		}
+	}
 }
 
 func category(tx common.Kind) {

@@ -62,7 +62,7 @@ func Setup() {
 }
 
 func TaskComic(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Hour * 6)
+	t := time.NewTicker(time.Hour * 16)
 	defer t.Stop()
 	rd.RPush(TaskStepRecord, fmt.Sprintf("漫画-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 	source.ComicPaw()
@@ -76,7 +76,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 10)
+	t := time.NewTicker(time.Minute * 30)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -94,7 +94,7 @@ func TaskChapter(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 20)
+	t := time.NewTicker(time.Minute * 50)
 	defer t.Stop()
 	for {
 		<-t.C
