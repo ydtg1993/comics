@@ -11,7 +11,7 @@ import (
 type Category []string
 
 type SourceComic struct {
-	Id           int       `json:"id" gorm:"primarykey"`
+	Id           int       `json:"id" gorm:"primarykey;->"`
 	Source       int       `json:"source"`
 	SourceId     int       `json:"source_id"`
 	SourceUrl    string    `json:"source_url"`

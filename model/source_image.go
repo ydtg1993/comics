@@ -10,7 +10,7 @@ import (
 
 type Images []string
 type SourceImage struct {
-	Id         int           `json:"id" gorm:"primarykey"`
+	Id         int           `json:"id" gorm:"primarykey;->"`
 	State      int           `json:"state"`
 	SourceData Images        `json:"source_data" gorm:"type:json"`
 	Images     Images        `json:"images" gorm:"type:json"`

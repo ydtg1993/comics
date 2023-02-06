@@ -3,6 +3,7 @@ package robot
 import (
 	"comics/tools"
 	"comics/tools/config"
+	"comics/tools/rd"
 	"fmt"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
@@ -11,6 +12,8 @@ import (
 )
 
 var Swarm []*Robot
+
+const RestartRobCommand = "restart:rob:command"
 
 type Robot struct {
 	Service   *selenium.Service
@@ -40,10 +43,20 @@ func SetUp(num int) {
 	}
 }
 
-func ReSetUp(num int) {
-	deleteRob()
+func Restart(num int) {
 	lifeTime := time.Now().Add(time.Hour * 12)
-	setRob(num, lifeTime)
+
+	t := time.NewTicker(time.Minute * 3)
+	defer t.Stop()
+	for {
+		<-t.C
+		restart := rd.Get(RestartRobCommand)
+		if restart == "" {
+			continue
+		}
+		deleteRob()
+		setRob(num, lifeTime)
+	}
 }
 
 func GetRob(keys []int) *Robot {

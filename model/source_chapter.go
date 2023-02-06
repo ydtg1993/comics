@@ -7,7 +7,7 @@ import (
 )
 
 type SourceChapter struct {
-	Id              int       `json:"id" gorm:"primarykey"`
+	Id              int       `json:"id" gorm:"primarykey;->"`
 	ComicId         int       `json:"comic_id"`
 	Source          int       `json:"source"`
 	SourceChapterId int       `json:"source_chapter_id"`
