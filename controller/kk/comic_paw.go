@@ -144,7 +144,9 @@ func paw(tagId, regionId, payId, stateId, sort, page int) {
 		if value.Get("is_free").Bool() == false {
 			sourceComic.IsFree = 1
 		}
-
+		if stateId == 2 {
+			sourceComic.IsFinish = 1
+		}
 		err := orm.Eloquent.Create(&sourceComic).Error
 		if err != nil {
 			msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d", config.Spe.SourceId, id)

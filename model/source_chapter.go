@@ -22,6 +22,7 @@ type SourceChapter struct {
 }
 
 const SourceChapterTASK = "source:comic:chapter"
+const SourceChapterRetryTask = "source:comic:retry:chapter"
 
 /**
 指定表名

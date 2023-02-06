@@ -23,6 +23,7 @@ type SourceComic struct {
 	LikeCount    string    `json:"like_count"`
 	Popularity   string    `json:"popularity"`
 	IsFree       int       `json:"is_free"`
+	IsFinish     int       `json:"is_finish"`
 	Description  string    `json:"description"`
 	SourceData   string    `json:"source_data"`
 	CreatedAt    time.Time `json:"created_at"`
@@ -30,6 +31,7 @@ type SourceComic struct {
 }
 
 const SourceComicTASK = "source:comic:task"
+const SourceComicRetryTask = "source:comic:retry:task"
 
 /**
 指定表名

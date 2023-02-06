@@ -34,11 +34,13 @@ func ChapterPaw() {
 		rob.WebDriver.Get(sourceComic.SourceUrl)
 		t := time.NewTicker(time.Second * 2)
 		<-t.C
+
 		_, check := rob.WebDriver.FindElement(selenium.ByXPATH, "//*[@id='special_bg']")
 		if check != nil {
 			msg := fmt.Sprintf("未找到漫画详情页内容 source = %d comic_id = %s comic_url = %s",
 				config.Spe.SourceId, id, sourceComic.SourceUrl)
 			model.RecordFail(sourceComic.SourceUrl, msg, "漫画详情未找到", 2)
+			rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
 			continue
 		}
 		var arg []interface{}
@@ -89,6 +91,7 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 				config.Spe.SourceId,
 				sourceComic.Id, sourceChapter.SourceUrl)
 			model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节未找到", 2)
+			rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
 			continue
 		}
 
@@ -105,6 +108,7 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 					sourceChapter.SourceUrl,
 					err.Error())
 				model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节入库错误", 2)
+				rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
 			} else {
 				rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
 			}

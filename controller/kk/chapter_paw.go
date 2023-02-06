@@ -41,7 +41,7 @@ func ChapterPaw() {
 				config.Spe.SourceId,
 				id, sourceComic.SourceUrl, err.Error())
 			model.RecordFail(sourceComic.SourceUrl, msg, "章节列表未找到", 2)
-			robot.ReSetUp(config.Spe.Maxthreads)
+			rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
 			return
 		}
 
@@ -81,11 +81,13 @@ func ChapterPaw() {
 							config.Spe.SourceId,
 							id, sourceChapter.SourceUrl)
 						model.RecordFail(sourceChapter.SourceUrl, msg, "章节没有购买", 2)
+						rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
 					} else {
 						msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %s chapter_url = %s",
 							config.Spe.SourceId,
 							id, sourceChapter.SourceUrl)
 						model.RecordFail(sourceChapter.SourceUrl, msg, "章节id没有查找到", 2)
+						rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
 					}
 					continue
 				}
@@ -105,6 +107,7 @@ func ChapterPaw() {
 						sourceChapter.SourceUrl,
 						err.Error())
 					model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节入库错误", 2)
+					rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
 				} else {
 					rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
 				}

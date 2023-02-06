@@ -29,9 +29,5 @@ func SourceOperate(source string) *SourceStrategy {
 			ImagePaw:    tx.ImagePaw,
 		}
 	}
-	return &SourceStrategy{
-		ComicPaw:   kk.ComicPaw,
-		ChapterPaw: kk.ChapterPaw,
-		ImagePaw:   kk.ImagePaw,
-	}
+	return &SourceStrategy{}
 }

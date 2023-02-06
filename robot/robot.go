@@ -25,7 +25,7 @@ func SetUp(num int) {
 	lifeTime := time.Now().Add(time.Hour * 6)
 	setRob(num, lifeTime)
 
-	t := time.NewTicker(time.Minute * 25)
+	t := time.NewTicker(time.Minute * 30)
 	defer t.Stop()
 	for {
 		<-t.C

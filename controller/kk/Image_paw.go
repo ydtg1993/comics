@@ -44,7 +44,8 @@ func ImagePaw() {
 				sourceChapter.Id,
 				sourceChapter.SourceUrl,
 				err.Error())
-			model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到 重启机器人", 3)
+			model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+			rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 			return
 		}
 		var sourceImage model.SourceImage
@@ -59,13 +60,14 @@ func ImagePaw() {
 			}
 		}
 		if len(sourceImage.SourceData) == 0 {
-			msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
+			msg := fmt.Sprintf("未找到懒加载图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
 				config.Spe.SourceId,
 				sourceChapter.ComicId,
 				sourceChapter.Id,
 				sourceChapter.SourceUrl,
 				err.Error())
 			model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+			rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 			continue
 		}
 		sourceImage.ChapterId, _ = strconv.Atoi(id)
@@ -86,6 +88,7 @@ func ImagePaw() {
 					sourceChapter.SourceChapterId,
 					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
+				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 			}
 		} else {
 			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
@@ -100,6 +103,7 @@ func ImagePaw() {
 					sourceChapter.SourceChapterId,
 					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
+				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 			}
 		}
 	}

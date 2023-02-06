@@ -84,7 +84,7 @@ CREATE TABLE `source_image`  (
 
 DROP TABLE IF EXISTS `fail_info`;
 CREATE TABLE `fail_info` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
   `type` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0漫画列表 1漫画 2章节 3图片',
   `err` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '错误关键词',

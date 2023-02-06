@@ -33,7 +33,8 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
-
+		rob.WebDriver.Close()
+		rob.Service.Stop()
 		var sourceImage model.SourceImage
 		sourceImage.Images = model.Images{}
 		for tryLimit := 0; tryLimit < 3; tryLimit++ {
@@ -45,8 +46,8 @@ func ImagePaw() {
 					sourceChapter.Id,
 					sourceChapter.SourceUrl,
 					err.Error())
-				model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到 重启机器人", 3)
-				robot.ReSetUp(config.Spe.Maxthreads)
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 				return
 			}
 			var arg []interface{}
@@ -114,6 +115,7 @@ function toBottom(){
 					sourceChapter.SourceChapterId,
 					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
+				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 			}
 		} else {
 			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
@@ -128,6 +130,7 @@ function toBottom(){
 					sourceChapter.SourceChapterId,
 					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
+				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
 			}
 		}
 	}

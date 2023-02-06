@@ -122,6 +122,9 @@ func paw(bot *colly.Collector, tagId, payId, stateId, page int) {
 		sourceComic.Description = description
 		sourceComic.LikeCount = ""
 		sourceComic.Popularity = ""
+		if stateId == 2 {
+			sourceComic.IsFinish = 1
+		}
 		var cookies map[string]string
 		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d", id%10)
 		downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", cookies)
