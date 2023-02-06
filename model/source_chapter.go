@@ -21,9 +21,6 @@ type SourceChapter struct {
 	UpdatedAt       time.Time `json:"updated_at"`
 }
 
-const SourceChapterTASK = "source:comic:chapter"
-const SourceChapterRetryTask = "source:comic:retry:chapter"
-
 /**
 指定表名
 */

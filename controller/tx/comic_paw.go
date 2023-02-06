@@ -106,7 +106,7 @@ func ComicUpdate() {
 				msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d", config.Spe.SourceId, id)
 				model.RecordFail(url, msg, "漫画入库", 1)
 			} else {
-				rd.RPush(model.SourceComicTASK, sourceComic.Id)
+				rd.RPush(common.SourceComicTASK, sourceComic.Id)
 			}
 		})
 
@@ -200,7 +200,7 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 			msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d", config.Spe.SourceId, id)
 			model.RecordFail(url, msg, "漫画入库", 1)
 		} else {
-			rd.RPush(model.SourceComicTASK, sourceComic.Id)
+			rd.RPush(common.SourceComicTASK, sourceComic.Id)
 		}
 	})
 

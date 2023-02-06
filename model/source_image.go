@@ -20,8 +20,6 @@ type SourceImage struct {
 	Chapter    SourceChapter `json:"chapter"`
 }
 
-const SourceImageTASK = "source:chapter:image"
-
 /**
 指定表名
 */

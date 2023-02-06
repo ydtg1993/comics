@@ -1,6 +1,7 @@
 package tx
 
 import (
+	"comics/common"
 	"comics/global/orm"
 	"comics/model"
 	"comics/robot"
@@ -22,7 +23,7 @@ func ChapterPaw() {
 
 	taskLimit := 100
 	for limit := 0; limit < taskLimit; limit++ {
-		id, err := rd.LPop(model.SourceComicTASK)
+		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return
 		}
@@ -40,7 +41,7 @@ func ChapterPaw() {
 			msg := fmt.Sprintf("未找到漫画详情页内容 source = %d comic_id = %s comic_url = %s",
 				config.Spe.SourceId, id, sourceComic.SourceUrl)
 			model.RecordFail(sourceComic.SourceUrl, msg, "漫画详情未找到", 2)
-			rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
+			rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			continue
 		}
 		var arg []interface{}
@@ -115,7 +116,7 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 				config.Spe.SourceId,
 				sourceComic.Id, sourceChapter.SourceUrl)
 			model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节未找到", 2)
-			rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
+			rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			continue
 		}
 
@@ -132,9 +133,9 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 					sourceChapter.SourceUrl,
 					err.Error())
 				model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节入库错误", 2)
-				rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
+				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			} else {
-				rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
+				rd.RPush(common.SourceChapterTASK, sourceChapter.Id)
 			}
 		}
 	}

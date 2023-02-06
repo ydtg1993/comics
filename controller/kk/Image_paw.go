@@ -22,7 +22,7 @@ func ImagePaw() {
 
 	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
-		id, err := rd.LPop(model.SourceChapterTASK)
+		id, err := rd.LPop(common.SourceChapterTASK)
 		if err != nil || id == "" {
 			return
 		}
@@ -47,7 +47,7 @@ func ImagePaw() {
 					err.Error())
 				if tryLimit == 2 {
 					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
-					rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
+					rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 				}
 				continue
 			}
@@ -69,7 +69,7 @@ func ImagePaw() {
 					err.Error())
 				if tryLimit == 2 {
 					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
-					rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
+					rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 				}
 				continue
 			}
@@ -89,7 +89,7 @@ func ImagePaw() {
 		}
 
 		var exists bool
-		orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).First(&exists)
+		orm.Eloquent.Model(model.SourceImage{}).Select("count(*) > 0").Where("chapter_id = ?", id).First(&exists)
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
@@ -99,7 +99,7 @@ func ImagePaw() {
 					sourceChapter.SourceChapterId,
 					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
-				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
+				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			}
 		} else {
 			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
@@ -114,7 +114,7 @@ func ImagePaw() {
 					sourceChapter.SourceChapterId,
 					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
-				rd.RPush(model.SourceChapterRetryTask, sourceChapter.Id)
+				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			}
 		}
 		t := time.NewTicker(time.Second * 2)

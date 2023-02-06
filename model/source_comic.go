@@ -30,9 +30,6 @@ type SourceComic struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-const SourceComicTASK = "source:comic:task"
-const SourceComicRetryTask = "source:comic:retry:task"
-
 /**
 指定表名
 */

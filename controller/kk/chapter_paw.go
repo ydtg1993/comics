@@ -1,6 +1,7 @@
 package kk
 
 import (
+	"comics/common"
 	"comics/global/orm"
 	"comics/model"
 	"comics/robot"
@@ -21,7 +22,7 @@ func ChapterPaw() {
 
 	taskLimit := 100
 	for limit := 0; limit < taskLimit; limit++ {
-		id, err := rd.LPop(model.SourceComicTASK)
+		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return
 		}
@@ -41,7 +42,7 @@ func ChapterPaw() {
 				config.Spe.SourceId,
 				id, sourceComic.SourceUrl, err.Error())
 			model.RecordFail(sourceComic.SourceUrl, msg, "章节列表未找到", 2)
-			rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
+			rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			continue
 		}
 		chapterList(&sourceComic, listElements)
@@ -94,13 +95,13 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 						config.Spe.SourceId,
 						sourceComic.Id, sourceChapter.SourceUrl)
 					model.RecordFail(sourceChapter.SourceUrl, msg, "章节没有购买", 2)
-					rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
+					rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 				} else {
 					msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s",
 						config.Spe.SourceId,
 						sourceComic.Id, sourceChapter.SourceUrl)
 					model.RecordFail(sourceChapter.SourceUrl, msg, "章节id没有查找到", 2)
-					rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
+					rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 				}
 				continue
 			}
@@ -120,9 +121,9 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 					sourceChapter.SourceUrl,
 					err.Error())
 				model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节入库错误", 2)
-				rd.RPush(model.SourceComicRetryTask, sourceComic.Id)
+				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			} else {
-				rd.RPush(model.SourceChapterTASK, sourceChapter.Id)
+				rd.RPush(common.SourceChapterTASK, sourceChapter.Id)
 			}
 		}
 	}
