@@ -183,7 +183,8 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		sourceComic.Title = title
 		sourceComic.Cover = cover
 		sourceComic.Author = author
-		sourceComic.Category = model.Category{tx.Tag.Name}
+		sourceComic.Label = model.Label{tx.Tag.Name}
+		sourceComic.Category = tx.Tag.Name
 		sourceComic.LikeCount = ""
 		sourceComic.Popularity = popularity
 		if tx.State.Val == 2 {
