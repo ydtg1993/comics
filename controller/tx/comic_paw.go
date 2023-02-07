@@ -18,7 +18,7 @@ import (
 
 func ComicPaw() {
 	tags := map[string]int{
-		/*"恋爱": 105,
+		"恋爱": 105,
 		"玄幻": 101,
 		"异能": 103,
 		"恐怖": 110,
@@ -30,7 +30,7 @@ func ComicPaw() {
 		"犯罪": 111,
 		"动作": 109,
 		"日常": 113,
-		"竞技": 114,*/
+		"竞技": 114,
 		"武侠": 115,
 		"历史": 116,
 		"战争": 117,
@@ -91,7 +91,7 @@ func ComicUpdate() {
 			sourceComic.Title = title
 			sourceComic.Cover = cover
 			sourceComic.Author = author
-			sourceComic.Category = model.Category{}
+			sourceComic.Label = model.Label{}
 			sourceComic.LikeCount = ""
 			sourceComic.Popularity = popularity
 
@@ -139,7 +139,7 @@ func category(tx common.Kind) {
 			total, _ := strconv.Atoi(params[1])
 			page = int(math.Ceil(float64(total) / float64(12)))
 			for {
-				if page < 1 {
+				if page < 1 || page > 5 {
 					break
 				}
 				paw(bot, tx, page)

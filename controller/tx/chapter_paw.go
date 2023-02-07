@@ -69,7 +69,7 @@ document.getElementsByClassName("chapter-page-btn-all")[0].dispatchEvent(mouseov
 			for _, tag := range tags {
 				tagString, err := tag.Text()
 				if err == nil {
-					sourceComic.Category = append(sourceComic.Category, tagString)
+					sourceComic.Label = append(sourceComic.Label, tagString)
 				}
 			}
 		}
@@ -77,6 +77,7 @@ document.getElementsByClassName("chapter-page-btn-all")[0].dispatchEvent(mouseov
 		if err == nil {
 			sourceComic.LikeCount, _ = like.Text()
 		}
+		sourceComic.Region = "国漫"
 		var total int64
 		orm.Eloquent.Model(model.SourceChapter{}).Where("comic_id = ?", sourceComic.Id).Count(&total)
 		sourceComic.ChapterCount = int(total)

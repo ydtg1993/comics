@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type Category []string
+type Label []string
 
 type SourceComic struct {
 	Id           int       `json:"id" gorm:"primarykey;->"`
@@ -18,7 +18,9 @@ type SourceComic struct {
 	Cover        string    `json:"cover"`
 	Title        string    `json:"title"`
 	Author       string    `json:"Author"`
-	Category     Category  `json:"category" gorm:"type:json"`
+	Label        Label     `json:"label" gorm:"type:json"`
+	Category     string    `json:"category"`
+	Region       string    `json:"region"`
 	ChapterCount int       `json:"chapter_count"`
 	LikeCount    string    `json:"like_count"`
 	Popularity   string    `json:"popularity"`
@@ -53,11 +55,11 @@ func (ma *SourceComic) BeforeUpdate(tx *gorm.DB) (err error) {
 	return
 }
 
-func (t *Category) Scan(value interface{}) error {
+func (t *Label) Scan(value interface{}) error {
 	bytesValue, _ := value.([]byte)
 	return json.Unmarshal(bytesValue, t)
 }
 
-func (t Category) Value() (driver.Value, error) {
+func (t Label) Value() (driver.Value, error) {
 	return json.Marshal(t)
 }

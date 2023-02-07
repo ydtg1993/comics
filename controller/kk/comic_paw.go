@@ -17,7 +17,7 @@ import (
 
 func ComicPaw() {
 	tags := map[string]int{
-		/*"恋爱":  20,
+		"恋爱":  20,
 		"古风":  46,
 		"穿越":  80,
 		"大女主": 77,
@@ -36,7 +36,7 @@ func ComicPaw() {
 		"搞笑":  71,
 		"重生":  89,
 		"异能":  68,
-		"冒险":  93,*/
+		"冒险":  93,
 		"武侠":  85,
 		"竞技":  72,
 		"正能量": 54,
@@ -65,7 +65,7 @@ func ComicPaw() {
 						Pay:    common.Kv{Name: pay, Val: payId},
 						State:  common.Kv{Name: state, Val: stateId},
 					}
-					category(kk, 1)
+					category(kk, 2)
 				}
 			}
 		}
@@ -92,7 +92,7 @@ func category(kk common.Kind, sort int) {
 	total := tools.FindStringNumber(content.Get("total").String())
 	page := int(math.Ceil(float64(total) / float64(48)))
 	for {
-		if page < 1 {
+		if page < 1 || page > 5 {
 			break
 		}
 		paw(kk, sort, page)
@@ -103,7 +103,7 @@ func category(kk common.Kind, sort int) {
 func paw(kk common.Kind, sort, page int) {
 	url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/search/mini/topic/multi_filter?tag_id=%d&label_dimension_origin=%d&pay_status=%d&update_status=%d&sort=%d&page=%d&size=48",
 		kk.Tag.Val, kk.Region.Val, kk.Pay.Val, kk.State.Val, sort, page)
-	content, err := common.RequestApi(url, "GET", "", 3)
+	content, err := common.RequestApi(url, "GET", "", 7)
 	if err != nil {
 		return
 	}
@@ -131,8 +131,10 @@ func paw(kk common.Kind, sort, page int) {
 		sourceComic.SourceUrl = "https://" + config.Spe.SourceUrl + "/web/topic/" + value.Get("id").String()
 		sourceComic.Title = value.Get("title").String()
 		for _, v := range value.Get("category").Array() {
-			sourceComic.Category = append(sourceComic.Category, v.Str)
+			sourceComic.Label = append(sourceComic.Label, v.Str)
 		}
+		sourceComic.Category = kk.Tag.Name
+		sourceComic.Region = kk.Region.Name
 		sourceComic.Author = value.Get("author_name").String()
 		sourceComic.IsFree = 0
 		sourceComic.SourceData = value.String()
