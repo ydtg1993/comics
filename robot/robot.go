@@ -13,7 +13,8 @@ import (
 
 var Swarm []*Robot
 
-const RestartRobCommand = "restart:rob:command"
+const RestartRobCommand = "rob:command:restart"
+const ShutRobCommand = "rob:command:shut"
 
 type Robot struct {
 	Service   *selenium.Service
@@ -43,7 +44,7 @@ func SetUp(num int) {
 	}
 }
 
-func Restart(num int) {
+func Command(num int) {
 	lifeTime := time.Now().Add(time.Hour * 12)
 
 	t := time.NewTicker(time.Minute * 3)
@@ -51,11 +52,17 @@ func Restart(num int) {
 	for {
 		<-t.C
 		restart := rd.Get(RestartRobCommand)
-		if restart == "" {
+		shut := rd.Get(ShutRobCommand)
+		if restart != "" {
+			deleteRob()
+			setRob(num, lifeTime)
+			rd.Delete(RestartRobCommand)
+			continue
+		} else if shut != "" {
+			deleteRob()
+			rd.Delete(ShutRobCommand)
 			continue
 		}
-		deleteRob()
-		setRob(num, lifeTime)
 	}
 }
 

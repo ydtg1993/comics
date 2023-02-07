@@ -56,13 +56,13 @@ func Setup() {
 	}
 
 	go robot.SetUp(config.Spe.Maxthreads)
-	go robot.Restart(config.Spe.Maxthreads)
+	go robot.Command(config.Spe.Maxthreads)
 	// 开始前的线程数
 	logs.Debug("线程数量 starting: %d\n", runtime.NumGoroutine())
 }
 
 func TaskComic(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Hour * 16)
+	t := time.NewTicker(time.Hour * 36)
 	defer t.Stop()
 	rd.RPush(TaskStepRecord, fmt.Sprintf("漫画-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 	source.ComicPaw()
@@ -76,7 +76,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 15)
+	t := time.NewTicker(time.Minute * 30)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -90,6 +90,16 @@ func TaskChapter(source *controller.SourceStrategy) {
 			}()
 		}
 		wg.Wait()
+	}
+}
+
+func TaskChapterUpdate(source *controller.SourceStrategy) {
+	t := time.NewTicker(time.Hour * 11)
+	defer t.Stop()
+	for {
+		<-t.C
+		rd.RPush(TaskStepRecord, fmt.Sprintf("连载漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+		source.ComicUpdate()
 	}
 }
 
