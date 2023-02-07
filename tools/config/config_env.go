@@ -51,8 +51,6 @@ type Specification struct {
 	MongoDatabase string        `envconfig:"MONGO_DATABASE"`
 	MongoMaxNum   uint64        `envconfig:"MONGO_MAX_NUM"`
 	MongoTimeout  time.Duration `envconfig:"MONGO_TIMEOUT" default:"2s"`
-
-	DaysInAdvance int64 `envconfig:"DAYS_IN_ADVANCE"`
 }
 
 var Spe Specification

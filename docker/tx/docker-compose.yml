@@ -1,0 +1,10 @@
+version: '3'
+services:
+  pod:
+    build: ./../linux
+    container_name: "tx"
+    restart: always
+    volumes:
+      - ./:/home/comics
+    environment:
+      SOURCE_URL: ""

@@ -15,20 +15,17 @@ import (
 	"time"
 )
 
+var Source *controller.SourceStrategy
 var TaskStepRecord = "task:step:record:"
 
 func main() {
 	Setup()
 
-	TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
-	rd.Delete(TaskStepRecord)
-	source := controller.SourceOperate(config.Spe.SourceUrl)
+	go TaskComic(Source)
 
-	go TaskComic(source)
+	go TaskChapter(Source)
 
-	go TaskChapter(source)
-
-	TaskImage(source)
+	TaskImage(Source)
 }
 
 func Setup() {
@@ -36,6 +33,8 @@ func Setup() {
 	if err != nil {
 		panic(err)
 	}
+
+	Source = controller.SourceOperate(config.Spe.SourceUrl)
 
 	mylog := new(log.LogsManage)
 	err = mylog.SetUp()
@@ -54,6 +53,8 @@ func Setup() {
 	if err != nil {
 		panic(err)
 	}
+	TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
+	rd.Delete(TaskStepRecord)
 
 	go robot.SetUp()
 	go robot.Command()

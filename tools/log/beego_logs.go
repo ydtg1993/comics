@@ -11,7 +11,7 @@ type LogsManage struct {
 }
 
 func (l LogsManage) SetUp() (err error) {
-	logName := fmt.Sprintf("%scomic.log", config.Spe.Logpath)
+	logName := fmt.Sprintf("%s/comic.log", config.Spe.Logpath+config.Spe.SourceUrl)
 	logErr := `"` + strings.Join(config.Spe.Loglevel, `","`) + `"`
 	level := 2
 	if strings.ContainsAny(logErr, "debug") == true {

@@ -3,6 +3,7 @@ package controller
 import (
 	"comics/controller/kk"
 	"comics/controller/tx"
+	"comics/tools/config"
 )
 
 type SourceStrategy struct {
@@ -16,6 +17,7 @@ type SourceStrategy struct {
 func SourceOperate(source string) *SourceStrategy {
 	switch source {
 	case "www.kuaikanmanhua.com":
+		config.Spe.SourceId = 1
 		return &SourceStrategy{
 			ComicPaw:    kk.ComicPaw,
 			ComicUpdate: kk.ComicUpdate,
@@ -23,6 +25,7 @@ func SourceOperate(source string) *SourceStrategy {
 			ImagePaw:    kk.ImagePaw,
 		}
 	case "ac.qq.com":
+		config.Spe.SourceId = 2
 		return &SourceStrategy{
 			ComicPaw:    tx.ComicPaw,
 			ComicUpdate: tx.ComicUpdate,
