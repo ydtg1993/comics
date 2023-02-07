@@ -6,10 +6,11 @@ import (
 )
 
 type SourceStrategy struct {
-	ComicPaw    func()
-	ComicUpdate func()
-	ChapterPaw  func()
-	ImagePaw    func()
+	ComicPaw      func()
+	ComicUpdate   func()
+	ChapterPaw    func()
+	ChapterUpdate func()
+	ImagePaw      func()
 }
 
 func SourceOperate(source string) *SourceStrategy {

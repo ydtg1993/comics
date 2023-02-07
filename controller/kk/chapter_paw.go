@@ -128,3 +128,7 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 		}
 	}
 }
+
+func ChapterUpdate() {
+
+}

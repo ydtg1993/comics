@@ -31,9 +31,9 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
-		var sourceImage model.SourceImage
+		sourceImage := new(model.SourceImage)
 		sourceImage.Images = model.Images{}
-
+		sourceImage.SourceData = model.Images{}
 		for tryLimit := 0; tryLimit < 3; tryLimit++ {
 			var arg []interface{}
 			rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)

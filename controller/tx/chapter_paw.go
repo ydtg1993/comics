@@ -141,3 +141,7 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 		}
 	}
 }
+
+func ChapterUpdate() {
+
+}

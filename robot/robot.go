@@ -89,9 +89,9 @@ func setRob(num int, lifeTime time.Time) {
 		if len(Swarm) >= num {
 			return
 		}
-
+		port := config.Spe.SourceId*10000 + 999 + len(Swarm)
 		r := &Robot{
-			Port:     19991 + len(Swarm),
+			Port:     port,
 			Lifetime: lifeTime,
 		}
 		r.prepare("https://" + config.Spe.SourceUrl)

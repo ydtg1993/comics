@@ -33,9 +33,9 @@ func ImagePaw() {
 			continue
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
-		var sourceImage model.SourceImage
+		sourceImage := new(model.SourceImage)
 		sourceImage.Images = model.Images{}
-
+		sourceImage.SourceData = model.Images{}
 		for tryLimit := 0; tryLimit < 3; tryLimit++ {
 			imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
 			if err != nil {
