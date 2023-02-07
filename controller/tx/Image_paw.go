@@ -94,7 +94,7 @@ function toBottom(){
 			cookies, _ := rob.WebDriver.GetCookies()
 			download(
 				sourceChapter.ComicId,
-				&sourceImage,
+				sourceImage,
 				cookies, sourceImage.SourceData)
 			if len(sourceImage.Images) > 0 {
 				break
