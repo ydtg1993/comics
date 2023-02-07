@@ -25,7 +25,8 @@ type Robot struct {
 	State     int
 }
 
-func SetUp(num int) {
+func SetUp() {
+	num := config.Spe.Maxthreads
 	lifeTime := time.Now().Add(time.Hour * 12)
 	setRob(num, lifeTime)
 
@@ -44,7 +45,8 @@ func SetUp(num int) {
 	}
 }
 
-func Command(num int) {
+func Command() {
+	num := config.Spe.Maxthreads
 	lifeTime := time.Now().Add(time.Hour * 12)
 
 	t := time.NewTicker(time.Minute * 3)
@@ -133,16 +135,24 @@ func (Robot *Robot) prepare(url string) {
 		"profile.managed_default_content_settings.images": 2,
 	}
 
-	chromeCaps := chrome.Capabilities{
-		Prefs: imagCaps,
-		Path:  "",
-		Args: []string{
-			//"--headless",
-			//"--no-sandbox",
+	args := []string{
+		"--headless",
+		"--no-sandbox",
+		"--ignore-certificate-errors",
+		"--ignore-ssl-errors",
+		"--user-agent=" + config.Spe.UserAgent,
+	}
+	if config.Spe.AppDebug == false {
+		args = []string{
 			"--ignore-certificate-errors",
 			"--ignore-ssl-errors",
 			"--user-agent=" + config.Spe.UserAgent,
-		},
+		}
+	}
+	chromeCaps := chrome.Capabilities{
+		Prefs: imagCaps,
+		Path:  "",
+		Args:  args,
 	}
 
 	caps.AddChrome(chromeCaps)

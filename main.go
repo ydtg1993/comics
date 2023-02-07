@@ -55,8 +55,8 @@ func Setup() {
 		panic(err)
 	}
 
-	go robot.SetUp(config.Spe.Maxthreads)
-	go robot.Command(config.Spe.Maxthreads)
+	go robot.SetUp()
+	go robot.Command()
 	// 开始前的线程数
 	logs.Debug("线程数量 starting: %d\n", runtime.NumGoroutine())
 }
