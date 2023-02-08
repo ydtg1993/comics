@@ -5,6 +5,6 @@ services:
     container_name: "tx"
     restart: always
     volumes:
-      - /home/www/tx/comics-crawler/tx:/home/comics
+      - /home/www/tx/comics-crawler:/home/comics
     environment:
       SOURCE_URL: "ac.qq.com"

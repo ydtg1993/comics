@@ -9,6 +9,7 @@ import (
 	"comics/tools/rd"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
+	"os"
 	"runtime"
 	"strconv"
 	"sync"
@@ -19,6 +20,8 @@ var Source *controller.SourceStrategy
 var TaskStepRecord = "task:step:record:"
 
 func main() {
+	fmt.Println(os.Getenv("SOURCE_URL"))
+	return
 	Setup()
 
 	go TaskComic(Source)

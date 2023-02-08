@@ -13,7 +13,7 @@ VOLUME [ "/sys/fs/cgroup" ]
 CMD ["/usr/sbin/init"]
 COPY /home/www/tx/comics-crawler/tx/resources/chrome.rpm  /home/chrome.rpm
 
-RUN yum update && yum install nohup && yum install /home/chrome.rpm
+RUN yum -y update && yum -y install nohup && yum -y install /home/chrome.rpm
 
 
 # set timezome
