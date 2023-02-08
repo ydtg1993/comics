@@ -20,8 +20,12 @@ func ChapterPaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 50
+	taskLimit := 20
 	for limit := 0; limit < taskLimit; limit++ {
+		signal := common.Signal("章节")
+		if signal == true {
+			return
+		}
 		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return
@@ -89,22 +93,23 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 					sourceChapter.SourceChapterId = tools.FindStringNumber(sourceChapter.SourceUrl)
 				}
 			}
-			if sourceChapter.SourceChapterId == 0 {
-				if sourceChapter.IsFree == 1 {
-					msg := fmt.Sprintf("章节还没有完成购买 source = %d comic_id = %d chapter_url = %s",
-						config.Spe.SourceId,
-						sourceComic.Id, sourceChapter.SourceUrl)
-					model.RecordFail(sourceChapter.SourceUrl, msg, "章节没有购买", 2)
-					rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
-				} else {
-					msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s",
-						config.Spe.SourceId,
-						sourceComic.Id, sourceChapter.SourceUrl)
-					model.RecordFail(sourceChapter.SourceUrl, msg, "章节id没有查找到", 2)
-					rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
-				}
-				continue
+		}
+
+		if sourceChapter.SourceChapterId == 0 {
+			if sourceChapter.IsFree == 1 {
+				msg := fmt.Sprintf("章节还没有完成购买 source = %d comic_id = %d chapter_url = %s",
+					config.Spe.SourceId,
+					sourceComic.Id, sourceChapter.SourceUrl)
+				model.RecordFail(sourceChapter.SourceUrl, msg, "章节没有购买", 2)
+				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
+			} else {
+				msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s",
+					config.Spe.SourceId,
+					sourceComic.Id, sourceChapter.SourceUrl)
+				model.RecordFail(sourceChapter.SourceUrl, msg, "章节id没有查找到", 2)
+				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			}
+			continue
 		}
 
 		var exists bool

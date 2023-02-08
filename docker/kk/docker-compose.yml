@@ -1,0 +1,12 @@
+version: '3'
+services:
+  pod:
+    build: ./../linux
+    container_name: "kk"
+    restart: always
+    volumes:
+      - /home/www/comics:/home/comics
+    environment:
+      SOURCE_URL: "www.kuaikanmanhua.com"
+    network_mode: "host"
+    shm_size: '7gb'

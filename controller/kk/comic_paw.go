@@ -123,7 +123,7 @@ func paw(kk common.Kind, sort, page int) {
 
 		coverUrl := strings.TrimSuffix(value.Get("cover_image_url").String(), "-t.w207.webp.h")
 		var cookies map[string]string
-		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d", id%10)
+		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d/%d", config.Spe.SourceId, id%128)
 		cover := common.DownFile(coverUrl, dir, filepath.Base(coverUrl)+".webp", cookies)
 		if cover != "" {
 			sourceComic.Cover = cover

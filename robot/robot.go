@@ -3,18 +3,16 @@ package robot
 import (
 	"comics/tools"
 	"comics/tools/config"
-	"comics/tools/rd"
 	"fmt"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
+	"github.com/tidwall/gjson"
+	"net/http"
 	"sync"
 	"time"
 )
 
 var Swarm []*Robot
-
-const RestartRobCommand = "rob:command:restart"
-const ShutRobCommand = "rob:command:shut"
 
 type Robot struct {
 	Service   *selenium.Service
@@ -23,49 +21,6 @@ type Robot struct {
 	Lifetime  time.Time
 	Lock      sync.Mutex
 	State     int
-}
-
-func SetUp() {
-	num := config.Spe.Maxthreads
-	lifeTime := time.Now().Add(time.Hour * 12)
-	setRob(num, lifeTime)
-
-	t := time.NewTicker(time.Minute * 30)
-	defer t.Stop()
-	for {
-		<-t.C
-		activeNum := len(Swarm)
-		if activeNum >= num {
-			if Swarm[0].Lifetime.Second() < time.Now().Second() {
-				continue //没有过期
-			}
-			deleteRob()
-		}
-		setRob(num, lifeTime)
-	}
-}
-
-func Command() {
-	num := config.Spe.Maxthreads
-	lifeTime := time.Now().Add(time.Hour * 12)
-
-	t := time.NewTicker(time.Minute * 3)
-	defer t.Stop()
-	for {
-		<-t.C
-		restart := rd.Get(RestartRobCommand)
-		shut := rd.Get(ShutRobCommand)
-		if restart != "" {
-			deleteRob()
-			setRob(num, lifeTime)
-			rd.Delete(RestartRobCommand)
-			continue
-		} else if shut != "" {
-			deleteRob()
-			rd.Delete(ShutRobCommand)
-			continue
-		}
-	}
 }
 
 func GetRob(keys []int) *Robot {
@@ -88,36 +43,51 @@ func GetRob(keys []int) *Robot {
 	return Rob
 }
 
-func ResetRob(rob *Robot) {
-	rob.State = 0
-	rob.Lock.Unlock()
-}
-
-func setRob(num int, lifeTime time.Time) {
-	for {
-		if len(Swarm) >= num {
-			return
-		}
-		port := config.Spe.SourceId*10000 + 999 + len(Swarm)
-		r := &Robot{
-			Port:     port,
-			Lifetime: lifeTime,
-		}
-		r.prepare("https://" + config.Spe.SourceUrl)
-		Swarm = append(Swarm, r)
+func ResetRob(Rob *Robot) {
+	content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=yipinbao6688&token=eUkxbHhCSFZFcit1TS9XRWdxVy9mUT09&auth=0&geo=PH&city=208622&agreement=1&timeout=35&num=1&rtype=0",
+		"GET", "", map[string]string{}, []*http.Cookie{})
+	proxy := ""
+	if code == 200 {
+		res := gjson.Parse(content)
+		proxy = "--proxy-server=http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
 	}
-}
-
-func deleteRob() {
-	for {
-		if len(Swarm) == 0 {
-			return
-		}
-		sw := pop(&Swarm)
-		sw.WebDriver.Close()
-		sw.Service.Stop()
-		sw.State = 1
+	args := []string{
+		"--headless",
+		"--no-sandbox",
+		"--disable-dev-shm-usage",
+		"--ignore-certificate-errors",
+		"--ignore-ssl-errors",
+		"--user-agent=" + config.Spe.UserAgent,
+		proxy,
 	}
+	if config.Spe.AppDebug == true {
+		args = []string{
+			"--ignore-certificate-errors",
+			"--ignore-ssl-errors",
+			"--user-agent=" + config.Spe.UserAgent,
+			proxy,
+		}
+	}
+	caps := selenium.Capabilities{
+		"browserName": "chrome",
+	}
+	caps.AddChrome(chrome.Capabilities{
+		Prefs: map[string]interface{}{
+			"profile.managed_default_content_settings.images": 2,
+		},
+		Path: "",
+		Args: args,
+	})
+	Rob.WebDriver.Close()
+	wb, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", Rob.Port))
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	wb.ResizeWindow("", 1400, 900)
+	Rob.WebDriver = wb
+	Rob.State = 0
+	Rob.Lock.Unlock()
 }
 
 func (Robot *Robot) prepare(url string) {
@@ -128,34 +98,41 @@ func (Robot *Robot) prepare(url string) {
 		return
 	}
 	Robot.Service = service
-	caps := selenium.Capabilities{
-		"browserName": "chrome",
+	content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=yipinbao6688&token=eUkxbHhCSFZFcit1TS9XRWdxVy9mUT09&auth=0&geo=PH&city=208622&agreement=1&timeout=35&num=1&rtype=0",
+		"GET", "", map[string]string{}, []*http.Cookie{})
+	proxy := ""
+	if code == 200 {
+		res := gjson.Parse(content)
+		proxy = "--proxy-server=http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
 	}
-	imagCaps := map[string]interface{}{
-		"profile.managed_default_content_settings.images": 2,
-	}
-
 	args := []string{
 		"--headless",
 		"--no-sandbox",
+		"--disable-dev-shm-usage",
 		"--ignore-certificate-errors",
 		"--ignore-ssl-errors",
 		"--user-agent=" + config.Spe.UserAgent,
+		proxy,
 	}
 	if config.Spe.AppDebug == true {
 		args = []string{
 			"--ignore-certificate-errors",
 			"--ignore-ssl-errors",
 			"--user-agent=" + config.Spe.UserAgent,
+			proxy,
 		}
 	}
-	chromeCaps := chrome.Capabilities{
-		Prefs: imagCaps,
-		Path:  "",
-		Args:  args,
-	}
 
-	caps.AddChrome(chromeCaps)
+	caps := selenium.Capabilities{
+		"browserName": "chrome",
+	}
+	caps.AddChrome(chrome.Capabilities{
+		Prefs: map[string]interface{}{
+			"profile.managed_default_content_settings.images": 2,
+		},
+		Path: "",
+		Args: args,
+	})
 	wb, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", Robot.Port))
 	if err != nil {
 		fmt.Println(err.Error())

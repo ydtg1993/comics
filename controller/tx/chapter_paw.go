@@ -21,8 +21,12 @@ func ChapterPaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 50
+	taskLimit := 20
 	for limit := 0; limit < taskLimit; limit++ {
+		signal := common.Signal("章节")
+		if signal == true {
+			return
+		}
 		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return

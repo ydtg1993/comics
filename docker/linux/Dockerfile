@@ -11,9 +11,9 @@ rm -f /lib/systemd/system/basic.target.wants/*;\
 rm -f /lib/systemd/system/anaconda.target.wants/*;
 VOLUME [ "/sys/fs/cgroup" ]
 CMD ["/usr/sbin/init"]
-COPY /home/www/tx/comics-crawler/tx/resources/chrome.rpm  /home/chrome.rpm
+COPY /chrome.rpm  /home/chrome.rpm
 
-RUN yum -y update && yum -y install nohup && yum -y install /home/chrome.rpm
+RUN yum -y install /home/chrome.rpm
 
 
 # set timezome

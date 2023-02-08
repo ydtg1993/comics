@@ -20,8 +20,12 @@ func ImagePaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 20
+	taskLimit := 5
 	for limit := 0; limit < taskLimit; limit++ {
+		signal := common.Signal("图片")
+		if signal == true {
+			return
+		}
 		id, err := rd.LPop(common.SourceChapterTASK)
 		if err != nil || id == "" {
 			return
@@ -127,7 +131,8 @@ func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Co
 	for _, cookie := range cookies {
 		ck[cookie.Name] = cookie.Value
 	}
-	dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d", comicId, sourceImage.ChapterId)
+	dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d/%d/%d",
+		config.Spe.SourceId, comicId%64, comicId, sourceImage.ChapterId)
 	for key, img := range images {
 		state := 0
 		for i := 0; i < 3; i++ {

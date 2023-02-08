@@ -2,7 +2,6 @@ package main
 
 import (
 	"comics/controller"
-	"comics/robot"
 	"comics/tools/config"
 	"comics/tools/database"
 	"comics/tools/log"
@@ -20,8 +19,6 @@ var Source *controller.SourceStrategy
 var TaskStepRecord = "task:step:record:"
 
 func main() {
-	fmt.Println(os.Getenv("SOURCE_URL"))
-	return
 	Setup()
 
 	go TaskComic(Source)
@@ -37,7 +34,12 @@ func Setup() {
 		panic(err)
 	}
 
+	url := os.Getenv("SOURCE_URL")
+	if url != "" {
+		config.Spe.SourceUrl = url
+	}
 	Source = controller.SourceOperate(config.Spe.SourceUrl)
+	config.Spe.RedisDb = config.Spe.SourceId
 
 	mylog := new(log.LogsManage)
 	err = mylog.SetUp()
@@ -59,8 +61,6 @@ func Setup() {
 	TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
 	rd.Delete(TaskStepRecord)
 
-	go robot.SetUp()
-	go robot.Command()
 	// 开始前的线程数
 	logs.Debug("线程数量 starting: %d\n", runtime.NumGoroutine())
 }
@@ -80,7 +80,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 30)
+	t := time.NewTicker(time.Minute * 15)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -108,7 +108,7 @@ func TaskChapterUpdate(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 60)
+	t := time.NewTicker(time.Minute * 15)
 	defer t.Stop()
 	for {
 		<-t.C

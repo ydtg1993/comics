@@ -191,7 +191,7 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 			sourceComic.IsFinish = 1
 		}
 		var cookies map[string]string
-		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d", id%10)
+		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d/%d", config.Spe.SourceId, id%128)
 		downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", cookies)
 		if downCover != "" {
 			sourceComic.Cover = downCover

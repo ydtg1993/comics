@@ -1,0 +1,12 @@
+version: '3'
+services:
+  pod:
+    build: ./../linux
+    container_name: "tx"
+    restart: always
+    volumes:
+      - /home/www/comics:/home/comics
+    environment:
+      SOURCE_URL: "ac.qq.com"
+    network_mode: "host"
+    shm_size: '7gb'
