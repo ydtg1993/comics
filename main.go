@@ -2,6 +2,7 @@ package main
 
 import (
 	"comics/controller"
+	"comics/robot"
 	"comics/tools/config"
 	"comics/tools/database"
 	"comics/tools/log"
@@ -61,6 +62,7 @@ func Setup() {
 	TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
 	rd.Delete(TaskStepRecord)
 
+	go robot.SetUp()
 	// 开始前的线程数
 	logs.Debug("线程数量 starting: %d\n", runtime.NumGoroutine())
 }
@@ -80,7 +82,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 5)
+	t := time.NewTicker(time.Minute * 3)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -108,7 +110,7 @@ func TaskChapterUpdate(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 5)
+	t := time.NewTicker(time.Minute * 3)
 	defer t.Stop()
 	for {
 		<-t.C

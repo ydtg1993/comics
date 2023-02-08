@@ -198,7 +198,7 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		}
 		err := orm.Eloquent.Create(&sourceComic).Error
 		if err != nil {
-			msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d", config.Spe.SourceId, id)
+			msg := fmt.Sprintf("漫画入库失败 source = %d source_id = %d err = %s", config.Spe.SourceId, id, err.Error())
 			model.RecordFail(url, msg, "漫画入库", 1)
 		} else {
 			rd.RPush(common.SourceComicTASK, sourceComic.Id)

@@ -23,6 +23,27 @@ type Robot struct {
 	State     int
 }
 
+func SetUp() {
+	num := config.Spe.Maxthreads
+	lifeTime := time.Now().Add(time.Hour * 999)
+	setRob(num, lifeTime)
+}
+
+func setRob(num int, lifeTime time.Time) {
+	for {
+		if len(Swarm) >= num {
+			return
+		}
+
+		r := &Robot{
+			Port:     19991 + len(Swarm),
+			Lifetime: lifeTime,
+		}
+		r.prepare("https://" + config.Spe.SourceUrl)
+		Swarm = append(Swarm, r)
+	}
+}
+
 func GetRob(keys []int) *Robot {
 	var Rob *Robot
 	for k, robot := range Swarm {
@@ -84,7 +105,7 @@ func ResetRob(Rob *Robot) {
 		fmt.Println(err.Error())
 		return
 	}
-	wb.ResizeWindow("", 1400, 900)
+	wb.ResizeWindow("", 1400, 1200)
 	Rob.WebDriver = wb
 	Rob.State = 0
 	Rob.Lock.Unlock()
