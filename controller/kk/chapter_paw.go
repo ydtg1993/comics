@@ -14,13 +14,13 @@ import (
 )
 
 func ChapterPaw() {
-	rob := robot.GetRob([]int{0, 2, 4})
+	rob := robot.GetRob([]int{0, 2, 4, 6, 8})
 	if rob == nil {
 		return
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 20
+	taskLimit := 12
 	for limit := 0; limit < taskLimit; limit++ {
 		signal := common.Signal("章节")
 		if signal == true {

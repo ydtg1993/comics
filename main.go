@@ -80,7 +80,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 15)
+	t := time.NewTicker(time.Minute * 5)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -108,7 +108,7 @@ func TaskChapterUpdate(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 15)
+	t := time.NewTicker(time.Minute * 5)
 	defer t.Stop()
 	for {
 		<-t.C
