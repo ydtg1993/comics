@@ -1,10 +1,10 @@
 version: '3'
 services:
   pod:
-    build: ./../linux
+    build: ./linux
     container_name: "tx"
     restart: always
     volumes:
-      - ./:/home/comics
+      - /home/www/tx/comics-crawler/tx:/home/comics
     environment:
-      SOURCE_URL: ""
+      SOURCE_URL: "ac.qq.com"

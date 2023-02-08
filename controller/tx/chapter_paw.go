@@ -28,36 +28,21 @@ func ChapterPaw() {
 			return
 		}
 
-		var sourceComic model.SourceComic
+		sourceComic := new(model.SourceComic)
 		if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 			continue
 		}
-		rob.WebDriver.Get(sourceComic.SourceUrl)
-		t := time.NewTicker(time.Second * 2)
-		<-t.C
-
-		_, check := rob.WebDriver.FindElement(selenium.ByXPATH, "//*[@id='special_bg']")
-		if check != nil {
-			msg := fmt.Sprintf("未找到漫画详情页内容 source = %d comic_id = %s comic_url = %s",
-				config.Spe.SourceId, id, sourceComic.SourceUrl)
-			model.RecordFail(sourceComic.SourceUrl, msg, "漫画详情未找到", 2)
-			rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
-			continue
-		}
-		var arg []interface{}
-		rob.WebDriver.ExecuteScript(`
-let mouseoverEvent = new Event('mouseover');
-document.getElementsByClassName("chapter-page-btn-all")[0].dispatchEvent(mouseoverEvent);
-`, arg)
-		elms, _ := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".chapter-page-more>a")
-		if len(elms) == 0 {
-			getChapter(&sourceComic, rob)
-		}
-		for _, elem := range elms {
-			elem.Click()
-			t := time.NewTicker(time.Second * 1)
+		for tryLimit := 0; tryLimit < 3; tryLimit++ {
+			rob.WebDriver.Get(sourceComic.SourceUrl)
+			t := time.NewTicker(time.Second * 2)
 			<-t.C
-			getChapter(&sourceComic, rob)
+
+			res := browser(rob, sourceComic)
+			if res != "" && tryLimit == 2 {
+				model.RecordFail(sourceComic.SourceUrl, res, "漫画详情未找到", 2)
+				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
+				rob.WebDriver.Refresh()
+			}
 		}
 
 		detail, err := rob.WebDriver.FindElement(selenium.ByCSSSelector, ".works-intro-short")
@@ -85,13 +70,50 @@ document.getElementsByClassName("chapter-page-btn-all")[0].dispatchEvent(mouseov
 	}
 }
 
-func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
-	elms, err := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".chapter-page-all .works-chapter-item")
+func browser(rob *robot.Robot, sourceComic *model.SourceComic) string {
+	_, check := rob.WebDriver.FindElement(selenium.ByXPATH, "//*[@id='special_bg']")
+	if check != nil {
+		msg := fmt.Sprintf("未找到漫画详情页内容 source = %d comic_id = %s comic_url = %s",
+			config.Spe.SourceId, sourceComic.Id, sourceComic.SourceUrl)
+		return msg
+	}
+	var arg []interface{}
+	rob.WebDriver.ExecuteScript(`
+let mouseoverEvent = new Event('mouseover');
+document.getElementsByClassName("chapter-page-btn-all")[0].dispatchEvent(mouseoverEvent);
+`, arg)
+	elms, _ := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".chapter-page-more>a")
+	if len(elms) == 0 {
+		res := getChapter(sourceComic, rob)
+		if res == true {
+			return ""
+		}
+		msg := fmt.Sprintf("未查找到章节列表Dom source = %d comic_id = %d comic_url = %s",
+			config.Spe.SourceId, sourceComic.Id, sourceComic.SourceUrl)
+		return msg
+	}
+
+	for sort, elem := range elms {
+		elem.Click()
+		t := time.NewTicker(time.Second * 1)
+		<-t.C
+		res := getChapter(sourceComic, rob)
+		if res == false {
+			msg := fmt.Sprintf("未查找到章节列表Dom:%d source = %d  comic_id = %d comic_url = %s",
+				sort, config.Spe.SourceId, sourceComic.Id, sourceComic.SourceUrl)
+			return msg
+		}
+	}
+	return ""
+}
+
+func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) bool {
+	elms, err := rob.WebDriver.FindElements(selenium.ByCSSSelector, ".works-chapter-item")
 	if err != nil {
-		return
+		return false
 	}
 	if len(elms) == 0 {
-		return
+		return false
 	}
 	for sort, elem := range elms {
 		sourceChapter := new(model.SourceChapter)
@@ -113,9 +135,8 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 			sourceChapter.SourceUrl = url
 		}
 		if sourceChapter.SourceChapterId == 0 {
-			msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s",
-				config.Spe.SourceId,
-				sourceComic.Id, sourceChapter.SourceUrl)
+			msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s dom_key = %d chapter_title = %s",
+				config.Spe.SourceId, sourceComic.Id, sourceChapter.SourceUrl, sort, sourceChapter.Title)
 			model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节未找到", 2)
 			rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			continue
@@ -129,10 +150,7 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 			err = orm.Eloquent.Create(&sourceChapter).Error
 			if err != nil {
 				msg := fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_url = %s err = %s",
-					config.Spe.SourceId,
-					sourceChapter.ComicId,
-					sourceChapter.SourceUrl,
-					err.Error())
+					config.Spe.SourceId, sourceChapter.ComicId, sourceChapter.SourceUrl, err.Error())
 				model.RecordFail(sourceComic.SourceUrl, msg, "漫画章节入库错误", 2)
 				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			} else {
@@ -140,6 +158,8 @@ func getChapter(sourceComic *model.SourceComic, rob *robot.Robot) {
 			}
 		}
 	}
+
+	return true
 }
 
 func ChapterUpdate() {

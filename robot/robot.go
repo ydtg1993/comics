@@ -142,7 +142,7 @@ func (Robot *Robot) prepare(url string) {
 		"--ignore-ssl-errors",
 		"--user-agent=" + config.Spe.UserAgent,
 	}
-	if config.Spe.AppDebug == false {
+	if config.Spe.AppDebug == true {
 		args = []string{
 			"--ignore-certificate-errors",
 			"--ignore-ssl-errors",

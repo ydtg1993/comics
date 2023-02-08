@@ -34,21 +34,20 @@ func ImagePaw() {
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
 		sourceImage := new(model.SourceImage)
+		sourceImage.ChapterId = sourceChapter.Id
 		sourceImage.Images = model.Images{}
 		sourceImage.SourceData = model.Images{}
 		for tryLimit := 0; tryLimit < 3; tryLimit++ {
 			imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
-			if err != nil {
+			if err != nil && tryLimit == 2 {
 				msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.Id,
 					sourceChapter.SourceUrl,
 					err.Error())
-				if tryLimit == 2 {
-					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
-					rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
-				}
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 				continue
 			}
 			var arg []interface{}
@@ -90,7 +89,6 @@ function toBottom(){
 				source, _ := img.GetAttribute("src")
 				sourceImage.SourceData = append(sourceImage.SourceData, source)
 			}
-			sourceImage.ChapterId, _ = strconv.Atoi(id)
 			cookies, _ := rob.WebDriver.GetCookies()
 			download(
 				sourceChapter.ComicId,
@@ -102,6 +100,7 @@ function toBottom(){
 				rob.WebDriver.Refresh()
 				t := time.NewTicker(time.Second * 2)
 				<-t.C
+				rob.WebDriver.Get(sourceChapter.SourceUrl)
 			}
 		}
 
