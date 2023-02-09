@@ -9,8 +9,6 @@ import (
 	"comics/tools/rd"
 	"fmt"
 	"github.com/tebeka/selenium"
-	"strconv"
-	"time"
 )
 
 func ImagePaw() {
@@ -20,7 +18,7 @@ func ImagePaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 5
+	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
 		signal := common.Signal("图片")
 		if signal == true {
@@ -38,7 +36,8 @@ func ImagePaw() {
 		sourceImage := new(model.SourceImage)
 		sourceImage.Images = model.Images{}
 		sourceImage.SourceData = model.Images{}
-		for tryLimit := 0; tryLimit < 3; tryLimit++ {
+		sourceImage.ChapterId = sourceChapter.Id
+		for tryLimit := 0; tryLimit <= 3; tryLimit++ {
 			var arg []interface{}
 			rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
 			imgList, err := rob.WebDriver.FindElements(selenium.ByClassName, "img-box")
@@ -65,35 +64,26 @@ func ImagePaw() {
 				}
 			}
 			if len(sourceImage.SourceData) == 0 {
-				msg := fmt.Sprintf("未找到懒加载图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
+				msg := fmt.Sprintf("未找到图片资源列表: source = %d comic_id = %d chapter_url = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
-					sourceChapter.Id,
-					sourceChapter.SourceUrl,
-					err.Error())
-				if tryLimit == 2 {
-					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+					sourceChapter.SourceUrl)
+				rob.WebDriver.Refresh()
+				if tryLimit == 3 {
+					model.RecordFail(sourceChapter.SourceUrl, msg, "图片资源未找到", 3)
 					rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 				}
 				continue
-			}
-			sourceImage.ChapterId, _ = strconv.Atoi(id)
-			cookies, _ := rob.WebDriver.GetCookies()
-			download(
-				sourceChapter.ComicId,
-				sourceImage,
-				cookies, sourceImage.SourceData)
-			if len(sourceImage.Images) > 0 {
-				break
 			} else {
-				rob.WebDriver.Refresh()
-				t := time.NewTicker(time.Second * 2)
-				<-t.C
+				break
 			}
 		}
 
+		if len(sourceImage.SourceData) == 0 {
+			continue
+		}
 		var exists bool
-		orm.Eloquent.Model(model.SourceImage{}).Select("count(*) > 0").Where("chapter_id = ?", id).First(&exists)
+		orm.Eloquent.Model(model.SourceImage{}).Select("id > 0").Where("chapter_id = ?", id).First(&exists)
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
@@ -104,6 +94,8 @@ func ImagePaw() {
 					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
 				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+			} else {
+				rd.RPush(common.SourceImageTASK, sourceImage.Id)
 			}
 		} else {
 			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
@@ -112,42 +104,16 @@ func ImagePaw() {
 				"state":       sourceImage.State,
 			}).Error
 			if err != nil {
-				msg := fmt.Sprintf("图片数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
+				msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
 					sourceChapter.SourceChapterId,
 					err.Error())
-				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误.更新", 3)
 				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+			} else {
+				rd.RPush(common.SourceImageTASK, sourceImage.Id)
 			}
 		}
-		t := time.NewTicker(time.Second * 2)
-		<-t.C
-	}
-}
-
-func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Cookie, images model.Images) {
-	ck := make(map[string]string)
-	for _, cookie := range cookies {
-		ck[cookie.Name] = cookie.Value
-	}
-	dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d/%d/%d",
-		config.Spe.SourceId, comicId%64, comicId, sourceImage.ChapterId)
-	for key, img := range images {
-		state := 0
-		for i := 0; i < 3; i++ {
-			file := common.DownFile(img, dir, fmt.Sprintf("%d.webp", key), ck)
-			if file != "" {
-				state = 1
-				sourceImage.Images = append(sourceImage.Images, file)
-				break
-			}
-		}
-		if state == 0 {
-			sourceImage.Images = model.Images{}
-			sourceImage.State = state
-			return
-		}
-		sourceImage.State = state
 	}
 }

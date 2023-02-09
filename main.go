@@ -26,7 +26,9 @@ func main() {
 
 	go TaskChapter(Source)
 
-	TaskImage(Source)
+	go TaskImage(Source)
+
+	TaskDownImage()
 }
 
 func Setup() {
@@ -62,7 +64,9 @@ func Setup() {
 	TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
 	rd.Delete(TaskStepRecord)
 
-	go robot.SetUp()
+	if config.Spe.SeleniumPath != "" {
+		go robot.SetUp()
+	}
 	// 开始前的线程数
 	logs.Debug("线程数量 starting: %d\n", runtime.NumGoroutine())
 }
@@ -82,7 +86,7 @@ func TaskComic(source *controller.SourceStrategy) {
 }
 
 func TaskChapter(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 3)
+	t := time.NewTicker(time.Minute * 10)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -110,7 +114,7 @@ func TaskChapterUpdate(source *controller.SourceStrategy) {
 }
 
 func TaskImage(source *controller.SourceStrategy) {
-	t := time.NewTicker(time.Minute * 3)
+	t := time.NewTicker(time.Minute * 10)
 	defer t.Stop()
 	for {
 		<-t.C
@@ -120,6 +124,30 @@ func TaskImage(source *controller.SourceStrategy) {
 		for i := 0; i < config.Spe.Maxthreads; i++ {
 			go func() {
 				source.ImagePaw()
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	}
+}
+
+func TaskDownImage() {
+	t := time.NewTicker(time.Minute * 15)
+	defer t.Stop()
+	for {
+		<-t.C
+		wg := sync.WaitGroup{}
+		wg.Add(config.Spe.Maxthreads)
+		rd.RPush(TaskStepRecord, fmt.Sprintf("图片-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+		for i := 0; i < config.Spe.Maxthreads; i++ {
+			go func() {
+				var ext string
+				if config.Spe.SourceId == 1 {
+					ext = "webp"
+				} else {
+					ext = "jpg"
+				}
+				controller.DownImage(ext)
 				wg.Done()
 			}()
 		}

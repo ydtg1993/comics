@@ -4,6 +4,7 @@ import (
 	"comics/common"
 	"comics/global/orm"
 	"comics/model"
+	"comics/robot"
 	"comics/tools"
 	"comics/tools/config"
 	"comics/tools/rd"
@@ -59,11 +60,7 @@ func ComicPaw() {
 }
 
 func ComicUpdate() {
-	bot := colly.NewCollector(
-		colly.AllowedDomains(config.Spe.SourceUrl),
-	)
-	extensions.RandomUserAgent(bot)
-	extensions.Referer(bot)
+	bot := robot.GetColly()
 
 	for page := 1; page < 13; page++ {
 		url := fmt.Sprintf("https://"+config.Spe.SourceUrl+"/Comic/all/search/time/page/%d",
@@ -92,7 +89,6 @@ func ComicUpdate() {
 			sourceComic.Cover = cover
 			sourceComic.Author = author
 			sourceComic.Label = model.Label{}
-			sourceComic.LikeCount = ""
 			sourceComic.Popularity = popularity
 
 			var cookies map[string]string
@@ -185,7 +181,6 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		sourceComic.Author = author
 		sourceComic.Label = model.Label{tx.Tag.Name}
 		sourceComic.Category = tx.Tag.Name
-		sourceComic.LikeCount = ""
 		sourceComic.Popularity = popularity
 		if tx.State.Val == 2 {
 			sourceComic.IsFinish = 1

@@ -22,7 +22,8 @@ type SourceComic struct {
 	Category     string    `json:"category"`
 	Region       string    `json:"region"`
 	ChapterCount int       `json:"chapter_count"`
-	LikeCount    string    `json:"like_count"`
+	ChapterPick  int       `json:"chapter_pick"`
+	Like         string    `json:"like"`
 	Popularity   string    `json:"popularity"`
 	IsFree       int       `json:"is_free"`
 	IsFinish     int       `json:"is_finish"`

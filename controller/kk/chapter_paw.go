@@ -14,15 +14,15 @@ import (
 )
 
 func ChapterPaw() {
-	rob := robot.GetRob([]int{0, 2, 4, 6, 8})
+	rob := robot.GetRob([]int{0, 2})
 	if rob == nil {
 		return
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 12
+	taskLimit := 100
 	for limit := 0; limit < taskLimit; limit++ {
-		signal := common.Signal("章节")
+		signal := common.Signal("kk章节")
 		if signal == true {
 			return
 		}
@@ -37,8 +37,8 @@ func ChapterPaw() {
 		}
 		rob.WebDriver.Get(sourceComic.SourceUrl)
 		var arg []interface{}
-		rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
-		t := time.NewTicker(time.Second * 2)
+		rob.WebDriver.ExecuteScript("window.scrollTo({'left':0,'top': 10000000,behavior: 'smooth'})", arg)
+		t := time.NewTicker(time.Second * 3)
 		<-t.C
 		listElements, err := rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
 		if err != nil {
@@ -90,7 +90,12 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 			if err == nil {
 				sourceChapter.SourceUrl, err = dom.GetAttribute("href")
 				if err == nil {
-					sourceChapter.SourceChapterId = tools.FindStringNumber(sourceChapter.SourceUrl)
+					if sourceChapter.SourceUrl == "javascript:void(0);" {
+						sourceChapter.SourceUrl = ""
+						sourceChapter.SourceChapterId = 0
+					} else {
+						sourceChapter.SourceChapterId = tools.FindStringNumber(sourceChapter.SourceUrl)
+					}
 				}
 			}
 		}
@@ -113,10 +118,10 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 		}
 
 		var exists bool
-		orm.Eloquent.Model(model.SourceChapter{}).Select("count(*) > 0").Where("source = ? and comic_id = ? and source_chapter_id = ?",
+		orm.Eloquent.Model(model.SourceChapter{}).Select("id > 0").Where("source = ? and comic_id = ? and source_url = ?",
 			config.Spe.SourceId,
 			sourceComic.Id,
-			sourceChapter.SourceChapterId).Find(&exists)
+			sourceChapter.SourceUrl).Find(&exists)
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceChapter).Error
 			if err != nil {

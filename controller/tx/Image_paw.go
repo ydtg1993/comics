@@ -22,7 +22,7 @@ func ImagePaw() {
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 5
+	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
 		signal := common.Signal("图片")
 		if signal == true {
@@ -41,17 +41,16 @@ func ImagePaw() {
 		sourceImage.ChapterId = sourceChapter.Id
 		sourceImage.Images = model.Images{}
 		sourceImage.SourceData = model.Images{}
-		for tryLimit := 0; tryLimit < 3; tryLimit++ {
+		for tryLimit := 0; tryLimit <= 3; tryLimit++ {
 			imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
-			if err != nil && tryLimit == 2 {
-				msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %d chapter_url = %s err = %s",
+			if err != nil && tryLimit == 3 {
+				msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %s",
 					config.Spe.SourceId,
 					sourceChapter.ComicId,
-					sourceChapter.Id,
-					sourceChapter.SourceUrl,
-					err.Error())
-				model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
+					sourceChapter.SourceUrl)
+				model.RecordFail(sourceChapter.SourceUrl, msg, "图片资源未找到", 3)
 				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+				rob.WebDriver.Refresh()
 				continue
 			}
 			var arg []interface{}
@@ -60,21 +59,34 @@ func ImagePaw() {
 			if err == nil {
 				vhi, err := strconv.Atoi(tools.UnknowToString(vh))
 				if err == nil {
-					wait = int(math.Ceil(float64(vhi) / float64(1200)))
+					wait = int(math.Ceil(float64(vhi) / float64(3000)))
 				}
 			}
 			rob.WebDriver.ExecuteScript(`
-let f = setInterval(toBottom,500);
-function toBottom(){
- let dom = document.getElementById("mainView")
- const currentScroll = dom.scrollTop 
- const clientHeight = dom.clientHeight; 
- const scrollHeight = dom.scrollHeight; 
- if (scrollHeight - 10 > currentScroll + clientHeight) {
- 	 dom.scrollTo({'left':0,'top': currentScroll + 800,behavior: 'smooth'})
-  }else{
-	 clearInterval(f)
-  }
+if (document.getElementById("mainView").scrollTop == 0){
+		let f1 = setInterval(()=>{
+	 let dom = document.getElementById("mainView")
+	 const currentScroll = dom.scrollTop 
+	 const clientHeight = dom.clientHeight; 
+	 const scrollHeight = dom.scrollHeight; 
+	 if (scrollHeight - 10 > currentScroll + clientHeight) {
+		 dom.scrollTo({'left':0,'top': currentScroll + 1600,behavior: 'smooth'})
+	  }else{
+		 clearInterval(f1)
+	  }
+	},500);
+}else{
+	let f2 = setInterval(()=>{
+	 let dom = document.getElementById("mainView")
+	 const currentScroll = dom.scrollTop 
+	 const clientHeight = dom.clientHeight; 
+	 const scrollHeight = dom.scrollHeight; 
+	 if (scrollHeight + 50 > currentScroll + clientHeight) {
+		 dom.scrollTo({'left':0,'top': currentScroll - 1600,behavior: 'smooth'})
+	  }else{
+		 clearInterval(f2)
+	  }
+	},500);
 }
 `, arg)
 			t := time.NewTicker(time.Second * time.Duration(wait))
@@ -91,35 +103,29 @@ function toBottom(){
 					continue
 				}
 				source, _ := img.GetAttribute("src")
-				sourceImage.SourceData = append(sourceImage.SourceData, source)
+				if source != "" {
+					sourceImage.SourceData = append(sourceImage.SourceData, source)
+				}
 			}
-			cookies, _ := rob.WebDriver.GetCookies()
-			download(
-				sourceChapter.ComicId,
-				sourceImage,
-				cookies, sourceImage.SourceData)
-			if len(sourceImage.Images) > 0 {
+			if len(sourceImage.SourceData) > 0 {
 				break
-			} else {
-				rob.WebDriver.Refresh()
-				t := time.NewTicker(time.Second * 2)
-				<-t.C
-				rob.WebDriver.Get(sourceChapter.SourceUrl)
 			}
 		}
 
 		var exists bool
-		orm.Eloquent.Model(model.SourceImage{}).Select("count(*) > 0").Where("chapter_id = ?", id).First(&exists)
+		msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+			config.Spe.SourceId,
+			sourceChapter.ComicId,
+			sourceChapter.SourceChapterId,
+			err.Error())
+		orm.Eloquent.Model(model.SourceImage{}).Select("id > 0").Where("chapter_id = ?", id).First(&exists)
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
-				msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
-					config.Spe.SourceId,
-					sourceChapter.ComicId,
-					sourceChapter.SourceChapterId,
-					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
 				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+			} else {
+				rd.RPush(common.SourceImageTASK, sourceImage.Id)
 			}
 		} else {
 			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
@@ -128,40 +134,11 @@ function toBottom(){
 				"state":       sourceImage.State,
 			}).Error
 			if err != nil {
-				msg := fmt.Sprintf("图片数据更新失败 source = %d comic_id = %d chapter_id = %d err = %s",
-					config.Spe.SourceId,
-					sourceChapter.ComicId,
-					sourceChapter.SourceChapterId,
-					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
 				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+			} else {
+				rd.RPush(common.SourceImageTASK, sourceImage.Id)
 			}
 		}
-	}
-}
-
-func download(comicId int, sourceImage *model.SourceImage, cookies []selenium.Cookie, images model.Images) {
-	ck := make(map[string]string)
-	for _, cookie := range cookies {
-		ck[cookie.Name] = cookie.Value
-	}
-	dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d/%d/%d",
-		config.Spe.SourceId, comicId%64, comicId, sourceImage.ChapterId)
-	for key, img := range images {
-		state := 0
-		for i := 0; i < 3; i++ {
-			file := common.DownFile(img, dir, fmt.Sprintf("%d.jpg", key), ck)
-			if file != "" {
-				state = 1
-				sourceImage.Images = append(sourceImage.Images, file)
-				break
-			}
-		}
-		if state == 0 {
-			sourceImage.Images = model.Images{}
-			sourceImage.State = state
-			return
-		}
-		sourceImage.State = state
 	}
 }
