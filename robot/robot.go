@@ -150,7 +150,9 @@ func (Robot *Robot) prepare(url string) {
 				"--user-agent=" + config.Spe.UserAgent,
 			}
 		}
-		_ = append(args, proxy)
+		if config.Spe.AppDebug == false {
+			args = append(args, proxy)
+		}
 
 		caps := selenium.Capabilities{
 			"browserName": "chrome",

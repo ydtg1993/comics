@@ -35,8 +35,8 @@ func GetColly() *colly.Collector {
 		res := gjson.Parse(content)
 		proxy = "http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
 	}
-	if proxy != "" {
-		//bot.SetProxy(proxy)
+	if proxy != "" && config.Spe.AppDebug == false {
+		bot.SetProxy(proxy)
 	}
 	return bot
 }
