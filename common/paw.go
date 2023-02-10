@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"comics/tools"
 	"comics/tools/config"
+	"crypto/tls"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -34,13 +36,28 @@ func RequestApi(url, method, param string, timeout int) (gjson.Result, error) {
 * @param	string		本地路径
 * @param	string		文件名称
  */
-func DownFile(sUrl, filepath, fileName string, cookies map[string]string) string {
+func DownFile(sUrl, filepath, fileName, proxy string, cookies map[string]string) string {
 	//拼接完整地址
 	allPathName := filepath + "/" + fileName
 	//建立远程连接
 	sParam := ""
-	client := &http.Client{}
-	client.Timeout = time.Second * 30
+	var client *http.Client
+	if proxy != "" {
+		proxy, _ := url.Parse(proxy)
+		tr := &http.Transport{
+			Proxy:           http.ProxyURL(proxy),
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+
+		client = &http.Client{
+			Transport: tr,
+			Timeout:   time.Second * 30,
+		}
+	} else {
+		client = &http.Client{
+			Timeout: time.Second * 30,
+		}
+	}
 	req, er := http.NewRequest(http.MethodGet, sUrl, bytes.NewReader([]byte(sParam)))
 	if er != nil {
 		logs.Warning("连接请求失败 error->", sUrl, er.Error())
@@ -51,7 +68,7 @@ func DownFile(sUrl, filepath, fileName string, cookies map[string]string) string
 	req.Header.Set("referer", "https://"+config.Spe.SourceUrl+"/")
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
 	req.Header.Set("Accept-Encoding", "gzip, deflate, br")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36")
+	req.Header.Set("User-Agent", config.Spe.UserAgent)
 	req.Header.Set("Connection", "Close")
 
 	ck := new(bytes.Buffer)
