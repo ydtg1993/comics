@@ -14,18 +14,14 @@ import (
 )
 
 func ChapterPaw() {
-	rob := robot.GetRob([]int{0, 2})
+	rob := robot.GetRob([]int{0, 1})
 	if rob == nil {
 		return
 	}
 	defer robot.ResetRob(rob)
 
-	taskLimit := 100
+	taskLimit := 75
 	for limit := 0; limit < taskLimit; limit++ {
-		signal := common.Signal("kk章节")
-		if signal == true {
-			return
-		}
 		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return
@@ -64,6 +60,9 @@ func ChapterPaw() {
 
 func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElement) {
 	for sort, itemElement := range listElements {
+		if sourceComic.Retry == 0 && sort < sourceComic.ChapterPick {
+			continue
+		}
 		dom, err := itemElement.FindElement(selenium.ByClassName, "img")
 		sourceChapter := new(model.SourceChapter)
 		sourceChapter.Source = 1
@@ -102,15 +101,17 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 
 		if sourceChapter.SourceChapterId == 0 {
 			if sourceChapter.IsFree == 1 {
-				msg := fmt.Sprintf("章节还没有完成购买 source = %d comic_id = %d chapter_url = %s",
+				msg := fmt.Sprintf("章节还没有完成购买 source = %d comic_id = %d chapter_url = %s chapter_name = %s",
 					config.Spe.SourceId,
-					sourceComic.Id, sourceChapter.SourceUrl)
+					sourceComic.Id, sourceChapter.SourceUrl,
+					sourceChapter.Title)
 				model.RecordFail(sourceChapter.SourceUrl, msg, "章节没有购买", 2)
 				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			} else {
-				msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s",
+				msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s chapter_name = %s",
 					config.Spe.SourceId,
-					sourceComic.Id, sourceChapter.SourceUrl)
+					sourceComic.Id, sourceChapter.SourceUrl,
+					sourceChapter.Title)
 				model.RecordFail(sourceChapter.SourceUrl, msg, "章节id没有查找到", 2)
 				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			}
@@ -123,6 +124,7 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 			sourceComic.Id,
 			sourceChapter.SourceUrl).Find(&exists)
 		if exists == false {
+			sourceComic.ChapterPick = sort
 			err = orm.Eloquent.Create(&sourceChapter).Error
 			if err != nil {
 				msg := fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_url = %s err = %s",
@@ -137,8 +139,4 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 			}
 		}
 	}
-}
-
-func ChapterUpdate() {
-
 }

@@ -9,10 +9,11 @@ import (
 	"comics/tools/rd"
 	"fmt"
 	"github.com/tebeka/selenium"
+	"time"
 )
 
 func ImagePaw() {
-	rob := robot.GetRob([]int{})
+	rob := robot.GetRob([]int{2, 3, 4})
 	if rob == nil {
 		return
 	}
@@ -20,10 +21,6 @@ func ImagePaw() {
 
 	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
-		signal := common.Signal("图片")
-		if signal == true {
-			return
-		}
 		id, err := rd.LPop(common.SourceChapterTASK)
 		if err != nil || id == "" {
 			return
@@ -48,9 +45,12 @@ func ImagePaw() {
 					sourceChapter.Id,
 					sourceChapter.SourceUrl,
 					err.Error())
-				if tryLimit == 2 {
+				if tryLimit == 3 {
 					model.RecordFail(sourceChapter.SourceUrl, msg, "图片列表未找到", 3)
 					rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+					robot.ResetRob(rob)
+					t := time.NewTicker(time.Second * 5)
+					<-t.C
 				}
 				continue
 			}

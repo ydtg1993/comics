@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
-	"github.com/tidwall/gjson"
-	"net/http"
 	"sync"
 	"time"
 )
@@ -63,13 +61,7 @@ func GetRob(keys []int) *Robot {
 
 func ResetRob(Rob *Robot) {
 	for tryLimit := 0; tryLimit <= 7; tryLimit++ {
-		content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=yipinbao6688&token=eUkxbHhCSFZFcit1TS9XRWdxVy9mUT09&auth=0&geo=PH&city=208622&agreement=1&timeout=35&num=1&rtype=0",
-			"GET", "", map[string]string{}, []*http.Cookie{})
-		proxy := ""
-		if code == 200 {
-			res := gjson.Parse(content)
-			proxy = "--proxy-server=http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
-		}
+		proxy := GetProxy()
 		args := []string{
 			"--headless",
 			"--no-sandbox",
@@ -128,13 +120,7 @@ func (Robot *Robot) prepare(url string) {
 	Robot.Service = service
 
 	for tryLimit := 0; tryLimit <= 7; tryLimit++ {
-		content, code, _ := tools.HttpRequest("https://dvapi.doveproxy.net/cmapi.php?rq=distribute&user=yipinbao6688&token=eUkxbHhCSFZFcit1TS9XRWdxVy9mUT09&auth=0&geo=PH&city=208622&agreement=1&timeout=35&num=1&rtype=0",
-			"GET", "", map[string]string{}, []*http.Cookie{})
-		proxy := ""
-		if code == 200 {
-			res := gjson.Parse(content)
-			proxy = "--proxy-server=http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
-		}
+		proxy := GetProxy()
 		args := []string{
 			"--headless",
 			"--no-sandbox",

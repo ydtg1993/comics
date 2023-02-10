@@ -4,6 +4,7 @@ import (
 	"comics/common"
 	"comics/global/orm"
 	"comics/model"
+	"comics/robot"
 	"comics/tools"
 	"comics/tools/config"
 	"comics/tools/rd"
@@ -58,7 +59,7 @@ func ComicPaw() {
 		for region, regionId := range regions {
 			for pay, payId := range pays {
 				for state, stateId := range states {
-					fmt.Printf("%s %s %s %s \n", tag, region, pay, state)
+					//fmt.Printf("%s %s %s %s \n", tag, region, pay, state)
 					kk := common.Kind{
 						Tag:    common.Kv{Name: tag, Val: tagId},
 						Region: common.Kv{Name: region, Val: regionId},
@@ -118,15 +119,19 @@ func paw(kk common.Kind, sort, page int) {
 			return true
 		}
 		sourceComic := new(model.SourceComic)
-		sourceComic.Source = 1
+		sourceComic.Source = config.Spe.SourceId
 		sourceComic.SourceId = id
 
 		coverUrl := strings.TrimSuffix(value.Get("cover_image_url").String(), "-t.w207.webp.h")
 		var cookies map[string]string
 		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d/%d", config.Spe.SourceId, id%128)
-		cover := common.DownFile(coverUrl, dir, filepath.Base(coverUrl)+".webp", cookies)
-		if cover != "" {
-			sourceComic.Cover = cover
+		for tryLimit := 0; tryLimit <= 3; tryLimit++ {
+			proxy := robot.GetProxy()
+			cover := common.DownFile(coverUrl, dir, filepath.Base(coverUrl)+".webp", proxy, cookies)
+			if cover != "" {
+				sourceComic.Cover = cover
+				break
+			}
 		}
 		sourceComic.SourceUrl = "https://" + config.Spe.SourceUrl + "/web/topic/" + value.Get("id").String()
 		sourceComic.Title = value.Get("title").String()

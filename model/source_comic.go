@@ -27,6 +27,7 @@ type SourceComic struct {
 	Popularity   string    `json:"popularity"`
 	IsFree       int       `json:"is_free"`
 	IsFinish     int       `json:"is_finish"`
+	Retry        int       `json:"retry"`
 	Description  string    `json:"description"`
 	SourceData   string    `json:"source_data"`
 	CreatedAt    time.Time `json:"created_at"`

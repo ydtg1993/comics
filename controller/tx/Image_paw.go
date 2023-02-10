@@ -24,10 +24,6 @@ func ImagePaw() {
 
 	taskLimit := 50
 	for limit := 0; limit < taskLimit; limit++ {
-		signal := common.Signal("图片")
-		if signal == true {
-			return
-		}
 		id, err := rd.LPop(common.SourceChapterTASK)
 		if err != nil || id == "" {
 			return

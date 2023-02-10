@@ -15,7 +15,7 @@ import (
 )
 
 func ChapterPaw() {
-	taskLimit := 100
+	taskLimit := 75
 
 	bot := robot.GetColly()
 	for limit := 0; limit < taskLimit; limit++ {
@@ -29,10 +29,9 @@ func ChapterPaw() {
 			continue
 		}
 
-		var pick int
 		bot.OnHTML("ol.chapter-page-all", func(e *colly.HTMLElement) {
 			e.ForEach(".works-chapter-item", func(sort int, e *colly.HTMLElement) {
-				if sort <= sourceComic.ChapterPick {
+				if sourceComic.Retry == 0 && sort < sourceComic.ChapterPick {
 					return
 				}
 				dom := e.DOM.Find("a")
@@ -63,7 +62,7 @@ func ChapterPaw() {
 					sourceComic.Id,
 					sourceChapter.SourceUrl).Find(&exists)
 				if exists == false {
-					pick = sort
+					sourceComic.ChapterPick = sort
 					err := orm.Eloquent.Create(&sourceChapter).Error
 					if err != nil {
 						msg := fmt.Sprintf("chapter数据导入失败 source = %d comic_id = %d chapter_url = %s err = %s",
@@ -84,7 +83,6 @@ func ChapterPaw() {
 			if state == "已完结" {
 				sourceComic.IsFinish = 1
 			}
-			sourceComic.ChapterPick = pick
 			sourceComic.Description = description
 			sourceComic.Like = like
 			sourceComic.Region = "国漫"
@@ -107,8 +105,4 @@ func ChapterPaw() {
 		t := time.NewTicker(time.Second * 2)
 		<-t.C
 	}
-}
-
-func ChapterUpdate() {
-
 }

@@ -79,6 +79,7 @@ CREATE TABLE `source_comic`  (
   `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
   `source_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '源数据',
   `chapter_pick` int(11) NOT NULL DEFAULT 0 COMMENT '章节拨片',
+  `retry` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0默认 1重抓',
   `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,

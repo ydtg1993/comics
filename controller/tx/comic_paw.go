@@ -47,7 +47,7 @@ func ComicPaw() {
 	for tag, tagId := range tags {
 		for pay, payId := range pays {
 			for state, stateId := range states {
-				fmt.Printf("%s %s %s \n", tag, pay, state)
+				//fmt.Printf("%s %s %s \n", tag, pay, state)
 				tx := common.Kind{
 					Tag:   common.Kv{Name: tag, Val: tagId},
 					Pay:   common.Kv{Name: pay, Val: payId},
@@ -93,9 +93,13 @@ func ComicUpdate() {
 
 			var cookies map[string]string
 			dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d", id%10)
-			downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", cookies)
-			if downCover != "" {
-				sourceComic.Cover = downCover
+			for tryLimit := 0; tryLimit <= 3; tryLimit++ {
+				proxy := robot.GetProxy()
+				downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", proxy, cookies)
+				if downCover != "" {
+					sourceComic.Cover = downCover
+					break
+				}
 			}
 			err := orm.Eloquent.Create(&sourceComic).Error
 			if err != nil {
@@ -187,7 +191,8 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		}
 		var cookies map[string]string
 		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d/%d", config.Spe.SourceId, id%128)
-		downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", cookies)
+		proxy := robot.GetProxy()
+		downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", proxy, cookies)
 		if downCover != "" {
 			sourceComic.Cover = downCover
 		}
