@@ -28,14 +28,15 @@ func TaskComic(source *SourceStrategy) {
 }
 
 func TaskChapter(source *SourceStrategy) {
-	t := time.NewTicker(time.Minute * 7)
+	t := time.NewTicker(time.Minute * 10)
 	defer t.Stop()
+	threads := 2
 	for {
 		<-t.C
 		wg := sync.WaitGroup{}
-		wg.Add(2)
+		wg.Add(threads)
 		rd.RPush(TaskStepRecord, fmt.Sprintf("章节-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
-		for i := 0; i < config.Spe.Maxthreads; i++ {
+		for i := 0; i < threads; i++ {
 			go func() {
 				source.ChapterPaw()
 				wg.Done()
@@ -69,14 +70,15 @@ func TaskChapterUpdate() {
 }
 
 func TaskImage(source *SourceStrategy) {
-	t := time.NewTicker(time.Minute * 9)
+	t := time.NewTicker(time.Minute * 30)
 	defer t.Stop()
+	threads := 3
 	for {
 		<-t.C
 		wg := sync.WaitGroup{}
-		wg.Add(3)
+		wg.Add(threads)
 		rd.RPush(TaskStepRecord, fmt.Sprintf("图片-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
-		for i := 0; i < config.Spe.Maxthreads; i++ {
+		for i := 0; i < threads; i++ {
 			go func() {
 				source.ImagePaw()
 				wg.Done()
@@ -87,14 +89,15 @@ func TaskImage(source *SourceStrategy) {
 }
 
 func TaskDownImage() {
-	t := time.NewTicker(time.Minute * 5)
+	t := time.NewTicker(time.Minute * 3)
 	defer t.Stop()
+	threads := 5
 	for {
 		<-t.C
 		wg := sync.WaitGroup{}
-		wg.Add(3)
+		wg.Add(threads)
 		rd.RPush(TaskStepRecord, fmt.Sprintf("图片下载-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
-		for i := 0; i < config.Spe.Maxthreads; i++ {
+		for i := 0; i < threads; i++ {
 			go func() {
 				var ext string
 				if config.Spe.SourceId == 1 {

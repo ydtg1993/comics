@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"comics/tools"
 	"comics/tools/config"
-	"crypto/tls"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/tidwall/gjson"
@@ -45,8 +44,8 @@ func DownFile(sUrl, filepath, fileName, proxy string, cookies map[string]string)
 	if proxy != "" {
 		proxy, _ := url.Parse(proxy)
 		tr := &http.Transport{
-			Proxy:           http.ProxyURL(proxy),
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy: http.ProxyURL(proxy),
+			//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		}
 
 		client = &http.Client{

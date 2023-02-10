@@ -121,13 +121,15 @@ func paw(kk common.Kind, sort, page int) {
 		sourceComic := new(model.SourceComic)
 		sourceComic.Source = config.Spe.SourceId
 		sourceComic.SourceId = id
-
-		coverUrl := strings.TrimSuffix(value.Get("cover_image_url").String(), "-t.w207.webp.h")
+		sourceComic.Cover = strings.TrimSuffix(value.Get("cover_image_url").String(), "-t.w207.webp.h")
 		var cookies map[string]string
 		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d/%d", config.Spe.SourceId, id%128)
-		for tryLimit := 0; tryLimit <= 3; tryLimit++ {
-			proxy := robot.GetProxy()
-			cover := common.DownFile(coverUrl, dir, filepath.Base(coverUrl)+".webp", proxy, cookies)
+		for tryLimit := 0; tryLimit <= 7; tryLimit++ {
+			proxy := ""
+			if tryLimit > 5 {
+				proxy = robot.GetProxy()
+			}
+			cover := common.DownFile(sourceComic.Cover, dir, filepath.Base(sourceComic.Cover)+".webp", proxy, cookies)
 			if cover != "" {
 				sourceComic.Cover = cover
 				break

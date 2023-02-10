@@ -18,5 +18,3 @@ const SourceComicTASK = "source:comic:task"
 const SourceComicRetryTask = "source:comic:retry:task"
 
 const SourceImageTASK = "source:chapter:image"
-
-const StopRobSignal = "stop"

@@ -18,9 +18,13 @@ func ChapterPaw() {
 	if rob == nil {
 		return
 	}
-	defer robot.ResetRob(rob)
+	robot.ResetRob(rob)
+	defer func() {
+		rob.State = 0
+		rob.Lock.Unlock()
+	}()
 
-	taskLimit := 75
+	taskLimit := 30
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
@@ -31,21 +35,29 @@ func ChapterPaw() {
 		if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 			continue
 		}
-		rob.WebDriver.Get(sourceComic.SourceUrl)
-		var arg []interface{}
-		rob.WebDriver.ExecuteScript("window.scrollTo({'left':0,'top': 10000000,behavior: 'smooth'})", arg)
-		t := time.NewTicker(time.Second * 3)
-		<-t.C
-		listElements, err := rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
-		if err != nil {
-			msg := fmt.Sprintf("章节列表未找到 source = %d comic_id = %s comic_url = %s err = %s",
-				config.Spe.SourceId,
-				id, sourceComic.SourceUrl, err.Error())
-			model.RecordFail(sourceComic.SourceUrl, msg, "章节列表未找到", 2)
-			rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
-			continue
+		for tryLimit := 0; tryLimit <= 5; tryLimit++ {
+			rob.WebDriver.Get(sourceComic.SourceUrl)
+			var arg []interface{}
+			rob.WebDriver.ExecuteScript("window.scrollTo({'left':0,'top': 10000000,behavior: 'smooth'})", arg)
+			t := time.NewTicker(time.Second * 3)
+			<-t.C
+			listElements, err := rob.WebDriver.FindElements(selenium.ByClassName, "TopicItem")
+			if err != nil {
+				if tryLimit > 3 {
+					if tryLimit == 5 {
+						msg := fmt.Sprintf("章节列表未找到 source = %d comic_id = %s comic_url = %s err = %s",
+							config.Spe.SourceId,
+							id, sourceComic.SourceUrl, err.Error())
+						model.RecordFail(sourceComic.SourceUrl, msg, "章节列表未找到", 2)
+						rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
+					}
+					robot.ResetRob(rob)
+				}
+				continue
+			}
+			chapterList(&sourceComic, listElements)
+			break
 		}
-		chapterList(&sourceComic, listElements)
 
 		detail, err := rob.WebDriver.FindElement(selenium.ByClassName, "detailsBox")
 		if err == nil {

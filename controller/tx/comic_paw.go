@@ -167,7 +167,7 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		url, _ := info.Find(".ret-works-title>a").Attr("href")
 		id := tools.FindStringNumber(url)
 		author := info.Find(".ret-works-author").Text()
-		cover, _ := e.DOM.Find(".ret-works-cover img.lazy").Attr("data-original")
+		coverUrl, _ := e.DOM.Find(".ret-works-cover img.lazy").Attr("data-original")
 		popularity := e.DOM.Find(".ret-works-tags span").Last().Find("em").Text()
 
 		var exists bool
@@ -181,7 +181,7 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		sourceComic.SourceId = id
 		sourceComic.SourceUrl = "https://" + config.Spe.SourceUrl + url
 		sourceComic.Title = title
-		sourceComic.Cover = cover
+		sourceComic.Cover = coverUrl
 		sourceComic.Author = author
 		sourceComic.Label = model.Label{tx.Tag.Name}
 		sourceComic.Category = tx.Tag.Name
@@ -191,10 +191,16 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		}
 		var cookies map[string]string
 		dir := fmt.Sprintf(config.Spe.DownloadPath+"comic/%d/%d", config.Spe.SourceId, id%128)
-		proxy := robot.GetProxy()
-		downCover := common.DownFile(cover, dir, tools.RandStr(9)+".jpg", proxy, cookies)
-		if downCover != "" {
-			sourceComic.Cover = downCover
+		for tryLimit := 0; tryLimit <= 7; tryLimit++ {
+			proxy := ""
+			if tryLimit > 5 {
+				proxy = robot.GetProxy()
+			}
+			cover := common.DownFile(sourceComic.Cover, dir, tools.RandStr(9)+".jpg", proxy, cookies)
+			if cover != "" {
+				sourceComic.Cover = cover
+				break
+			}
 		}
 		err := orm.Eloquent.Create(&sourceComic).Error
 		if err != nil {

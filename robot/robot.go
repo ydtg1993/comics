@@ -107,8 +107,6 @@ func ResetRob(Rob *Robot) {
 			break
 		}
 	}
-	Rob.State = 0
-	Rob.Lock.Unlock()
 }
 
 func (Robot *Robot) prepare(url string) {
@@ -168,7 +166,5 @@ func (Robot *Robot) prepare(url string) {
 			Robot.WebDriver = wb
 			break
 		}
-		t := time.NewTicker(time.Second * 3)
-		<-t.C
 	}
 }

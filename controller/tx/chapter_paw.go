@@ -15,7 +15,7 @@ import (
 )
 
 func ChapterPaw() {
-	taskLimit := 75
+	taskLimit := 30
 
 	bot := robot.GetColly()
 	for limit := 0; limit < taskLimit; limit++ {

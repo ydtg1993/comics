@@ -12,14 +12,12 @@ import (
 )
 
 func DownImage(ext string) {
-	taskLimit := 10
-	proxy := robot.GetProxy()
+	taskLimit := 5
 	for limit := 0; limit < taskLimit; limit++ {
 		id, err := rd.LPop(common.SourceImageTASK)
 		if err != nil || id == "" {
 			return
 		}
-
 		sourceImage := new(model.SourceImage)
 		if orm.Eloquent.Where("id = ?", id).First(&sourceImage); sourceImage.Id == 0 {
 			continue
@@ -29,25 +27,33 @@ func DownImage(ext string) {
 
 		dir := fmt.Sprintf(config.Spe.DownloadPath+"chapter/%d/%d/%d/%d",
 			config.Spe.SourceId, sourceChapter.ComicId%128, sourceChapter.ComicId, sourceImage.ChapterId)
-		for key, img := range sourceImage.SourceData {
-			state := 0
-			for i := 0; i < 3; i++ {
-				file := common.DownFile(img, dir, fmt.Sprintf("%d.%s", key, ext), proxy, map[string]string{})
-				if file != "" {
-					state = 1
-					sourceImage.Images = append(sourceImage.Images, file)
-					logs.Warning(fmt.Sprintf("图片下载本地失败 source_id = %d comic_id = %d chapter_id = %d",
-						config.Spe.SourceId, sourceChapter.ComicId, sourceChapter.Id))
-					break
-				}
-			}
-			if state == 0 {
-				sourceImage.Images = model.Images{}
-				sourceImage.State = state
-				break
-			}
-			sourceImage.State = state
+		down(sourceImage, dir, ext)
+		if len(sourceImage.Images) == 0 {
+			logs.Warning(fmt.Sprintf("图片下载本地失败 source_id = %d comic_id = %d chapter_id = %d",
+				config.Spe.SourceId, sourceChapter.ComicId, sourceChapter.Id))
+			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
+			continue
 		}
 		orm.Eloquent.Save(&sourceImage)
+	}
+}
+
+func down(sourceImage *model.SourceImage, dir, ext string) {
+	for key, img := range sourceImage.SourceData {
+		sourceImage.State = 0
+		proxy := ""
+		for tryLimit := 0; tryLimit <= 7; tryLimit++ {
+			file := common.DownFile(img, dir, fmt.Sprintf("%d.%s", key, ext), proxy, map[string]string{})
+			if file != "" {
+				sourceImage.State = 1
+				sourceImage.Images = append(sourceImage.Images, file)
+				break
+			} else if tryLimit > 5 {
+				proxy = robot.GetProxy()
+			}
+		}
+	}
+	if sourceImage.State == 0 {
+		sourceImage.Images = model.Images{}
 	}
 }

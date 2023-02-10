@@ -7,6 +7,7 @@ import (
 	"comics/tools/database"
 	"comics/tools/log"
 	"comics/tools/rd"
+	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"os"
 	"runtime"
@@ -17,7 +18,7 @@ var Source *controller.SourceStrategy
 
 func main() {
 	Setup()
-
+	fmt.Println(config.Spe.SourceUrl)
 	go controller.TaskComic(Source)
 
 	go controller.TaskChapter(Source)

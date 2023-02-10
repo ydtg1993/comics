@@ -32,5 +32,7 @@ func GetProxy() string {
 		res := gjson.Parse(content)
 		proxy = "http://" + res.Get("data").Get("ip").String() + ":" + res.Get("data").Get("port").String()
 	}
+	t := time.NewTicker(time.Second * 1)
+	<-t.C
 	return proxy
 }
