@@ -26,6 +26,7 @@ func ChapterPaw() {
 
 	taskLimit := 30
 	for limit := 0; limit < taskLimit; limit++ {
+		common.StopSignal("章节任务挂起")
 		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return
@@ -130,11 +131,7 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 			continue
 		}
 
-		var exists bool
-		orm.Eloquent.Model(model.SourceChapter{}).Select("id > 0").Where("source = ? and comic_id = ? and source_url = ?",
-			config.Spe.SourceId,
-			sourceComic.Id,
-			sourceChapter.SourceUrl).Find(&exists)
+		exists := new(model.SourceChapter).Exists(sourceComic.Id, sourceChapter.SourceUrl)
 		if exists == false {
 			sourceComic.ChapterPick = sort
 			err = orm.Eloquent.Create(&sourceChapter).Error

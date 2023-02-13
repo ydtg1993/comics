@@ -2,6 +2,7 @@ package model
 
 import (
 	"comics/global/orm"
+	"comics/tools/config"
 	"gorm.io/gorm"
 	"time"
 )
@@ -42,4 +43,13 @@ func (ma *SourceChapter) BeforeCreate(tx *gorm.DB) (err error) {
 func (ma *SourceChapter) BeforeUpdate(tx *gorm.DB) (err error) {
 	ma.UpdatedAt = time.Now()
 	return
+}
+
+func (ma *SourceChapter) Exists(comicId int, sourceUrl string) bool {
+	result := orm.Eloquent.Where("source = ? and comic_id = ? and source_url = ?",
+		config.Spe.SourceId, comicId, sourceUrl).Limit(1).Find(&ma)
+	if result.Error == nil && result.RowsAffected == 1 {
+		return true
+	}
+	return false
 }

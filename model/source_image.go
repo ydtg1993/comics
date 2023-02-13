@@ -10,14 +10,15 @@ import (
 
 type Images []string
 type SourceImage struct {
-	Id         int           `json:"id" gorm:"primarykey;->"`
-	State      int           `json:"state"`
-	SourceData Images        `json:"source_data" gorm:"type:json"`
-	Images     Images        `json:"images" gorm:"type:json"`
-	CreatedAt  time.Time     `json:"created_at"`
-	UpdatedAt  time.Time     `json:"updated_at"`
-	ChapterId  int           `json:"chapter_id"`
-	Chapter    SourceChapter `json:"chapter"`
+	Id         int       `json:"id" gorm:"primarykey;->"`
+	Source     int       `json:"source"`
+	ComicId    int       `json:"comic_id"`
+	State      int       `json:"state"`
+	SourceData Images    `json:"source_data" gorm:"type:json"`
+	Images     Images    `json:"images" gorm:"type:json"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	ChapterId  int       `json:"chapter_id"`
 }
 
 /**
@@ -50,4 +51,12 @@ func (t *Images) Scan(value interface{}) error {
 
 func (t Images) Value() (driver.Value, error) {
 	return json.Marshal(t)
+}
+
+func (ma *SourceImage) Exists(chapterId int) bool {
+	result := orm.Eloquent.Where("chapter_id = ?", chapterId).Limit(1).Find(&ma)
+	if result.Error == nil && result.RowsAffected == 1 {
+		return true
+	}
+	return false
 }

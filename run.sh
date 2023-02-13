@@ -1,2 +1,2 @@
 #!/bin/bash
-/home/comics/comics > out.log 2>&1 &
+/home/comics/comics > $1.log 2>&1 &

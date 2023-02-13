@@ -1,5 +1,5 @@
 #!/bin/bash
-project="comics"
-rm -f out.log
-rm -rf ./runtime
-chmod 0777 $project
+rm -f $1.log
+rm -f comics
+git pull
+chmod 0777 comics

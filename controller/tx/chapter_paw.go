@@ -15,10 +15,11 @@ import (
 )
 
 func ChapterPaw() {
-	taskLimit := 30
+	taskLimit := 50
 
 	bot := robot.GetColly()
 	for limit := 0; limit < taskLimit; limit++ {
+		common.StopSignal("章节任务挂起")
 		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return
@@ -56,11 +57,7 @@ func ChapterPaw() {
 				if app != -1 {
 					return
 				}
-				var exists bool
-				orm.Eloquent.Model(model.SourceChapter{}).Select("id > 0").Where("source = ? and comic_id = ? and source_url = ?",
-					config.Spe.SourceId,
-					sourceComic.Id,
-					sourceChapter.SourceUrl).Find(&exists)
+				exists := new(model.SourceChapter).Exists(sourceComic.Id, sourceChapter.SourceUrl)
 				if exists == false {
 					sourceComic.ChapterPick = sort
 					err := orm.Eloquent.Create(&sourceChapter).Error
@@ -86,6 +83,7 @@ func ChapterPaw() {
 			sourceComic.Description = description
 			sourceComic.Like = like
 			sourceComic.Region = "国漫"
+			sourceComic.SourceData, _ = e.DOM.Html()
 			var total int64
 			orm.Eloquent.Model(model.SourceChapter{}).Where("comic_id = ?", sourceComic.Id).Count(&total)
 			sourceComic.ChapterCount = int(total)

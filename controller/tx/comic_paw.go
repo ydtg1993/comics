@@ -139,11 +139,11 @@ func category(tx common.Kind) {
 			total, _ := strconv.Atoi(params[1])
 			page = int(math.Ceil(float64(total) / float64(12)))
 			for {
-				if page < 1 || page > 5 {
+				if page < 1 || page > 10 {
 					break
 				}
 				paw(bot, tx, page)
-				t := time.NewTicker(time.Second * 2)
+				t := time.NewTicker(time.Second * 5)
 				<-t.C
 				page--
 			}
@@ -170,9 +170,7 @@ func paw(bot *colly.Collector, tx common.Kind, page int) {
 		coverUrl, _ := e.DOM.Find(".ret-works-cover img.lazy").Attr("data-original")
 		popularity := e.DOM.Find(".ret-works-tags span").Last().Find("em").Text()
 
-		var exists bool
-		orm.Eloquent.Model(model.SourceComic{}).Select("count(*) > 0").
-			Where("source = ? and source_id = ?", config.Spe.SourceId, id).Find(&exists)
+		exists := new(model.SourceComic).Exists(id)
 		if exists == true {
 			return
 		}

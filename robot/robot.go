@@ -22,6 +22,9 @@ type Robot struct {
 
 func SetUp() {
 	num := config.Spe.Maxthreads
+	if config.Spe.SourceId == 2 {
+		num = num - 2
+	}
 	setRob(num)
 }
 

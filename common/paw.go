@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"comics/tools"
 	"comics/tools/config"
+	"comics/tools/rd"
 	"fmt"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/tidwall/gjson"
@@ -127,5 +128,14 @@ func DownFile(sUrl, filepath, fileName, proxy string, cookies map[string]string)
 		return allPathName
 	} else {
 		return ""
+	}
+}
+
+func StopSignal(output string) {
+	signal := "shutdown"
+	count, err := rd.LLen("shutdown")
+	if err == nil && count > 0 {
+		rd.RPush(signal, output)
+		time.Sleep(time.Hour * 24)
 	}
 }

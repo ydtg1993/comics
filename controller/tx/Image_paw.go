@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/tebeka/selenium"
 	"math"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -26,8 +27,9 @@ func ImagePaw() {
 		rob.Lock.Unlock()
 	}()
 
-	taskLimit := 30
+	taskLimit := 12
 	for limit := 0; limit < taskLimit; limit++ {
+		common.StopSignal("图片任务挂起")
 		id, err := rd.LPop(common.SourceChapterTASK)
 		if err != nil || id == "" {
 			return
@@ -38,6 +40,8 @@ func ImagePaw() {
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
 		sourceImage := new(model.SourceImage)
+		sourceImage.Source = config.Spe.SourceId
+		sourceImage.ComicId = sourceChapter.ComicId
 		sourceImage.ChapterId = sourceChapter.Id
 		sourceImage.Images = model.Images{}
 		sourceImage.SourceData = model.Images{}
@@ -52,28 +56,32 @@ func ImagePaw() {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue
 		}
-		var exists bool
-		msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
-			config.Spe.SourceId,
-			sourceChapter.ComicId,
-			sourceChapter.SourceChapterId,
-			err.Error())
-		orm.Eloquent.Model(model.SourceImage{}).Select("id > 0").Where("chapter_id = ?", id).First(&exists)
+		record := new(model.SourceImage)
+		exists := record.Exists(sourceChapter.Id)
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
+				msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+					config.Spe.SourceId,
+					sourceChapter.ComicId,
+					sourceChapter.SourceChapterId,
+					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片入库错误", 3)
 				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			} else {
 				rd.RPush(common.SourceImageTASK, sourceImage.Id)
 			}
 		} else {
-			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
-				"images":      sourceImage.Images,
-				"source_data": sourceImage.SourceData,
-				"state":       sourceImage.State,
-			}).Error
+			record.Images = sourceImage.Images
+			record.SourceData = sourceImage.SourceData
+			record.State = sourceImage.State
+			err = orm.Eloquent.Save(record).Error
 			if err != nil {
+				msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
+					config.Spe.SourceId,
+					sourceChapter.ComicId,
+					sourceChapter.SourceChapterId,
+					err.Error())
 				model.RecordFail(sourceChapter.SourceUrl, msg, "图片数据更新错误", 3)
 				rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			} else {
@@ -84,7 +92,34 @@ func ImagePaw() {
 }
 
 func browserList(rob *robot.Robot, sourceImage *model.SourceImage, sourceChapter *model.SourceChapter) {
-	for tryLimit := 0; tryLimit <= 5; tryLimit++ {
+	script := `
+if (document.getElementById("mainView").scrollTop == 0){
+		let f1 = setInterval(()=>{
+	 let dom = document.getElementById("mainView")
+	 const currentScroll = dom.scrollTop 
+	 const clientHeight = dom.clientHeight; 
+	 const scrollHeight = dom.scrollHeight; 
+	 if (scrollHeight - 10 > currentScroll + clientHeight) {
+		 dom.scrollTo({'left':0,'top': currentScroll + 1200,behavior: 'smooth'})
+	  }else{
+		 clearInterval(f1)
+	  }
+	},500);
+}else{
+	let f2 = setInterval(()=>{
+	 let dom = document.getElementById("mainView")
+	 const currentScroll = dom.scrollTop 
+	 const clientHeight = dom.clientHeight; 
+	 const scrollHeight = dom.scrollHeight; 
+	 if (scrollHeight + 50 > currentScroll + clientHeight) {
+		 dom.scrollTo({'left':0,'top': currentScroll - 1600,behavior: 'smooth'})
+	  }else{
+		 clearInterval(f2)
+	  }
+	},500);
+}`
+
+	for tryLimit := 0; tryLimit <= 6; tryLimit++ {
 		imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
 		if err != nil {
 			if tryLimit > 3 {
@@ -108,36 +143,10 @@ func browserList(rob *robot.Robot, sourceImage *model.SourceImage, sourceChapter
 		if err == nil {
 			vhi, err := strconv.Atoi(tools.UnknowToString(vh))
 			if err == nil {
-				wait = int(math.Ceil(float64(vhi) / float64(3000)))
+				wait = int(math.Ceil(float64(vhi) / float64(2200)))
 			}
 		}
-		rob.WebDriver.ExecuteScript(`
-if (document.getElementById("mainView").scrollTop == 0){
-		let f1 = setInterval(()=>{
-	 let dom = document.getElementById("mainView")
-	 const currentScroll = dom.scrollTop 
-	 const clientHeight = dom.clientHeight; 
-	 const scrollHeight = dom.scrollHeight; 
-	 if (scrollHeight - 10 > currentScroll + clientHeight) {
-		 dom.scrollTo({'left':0,'top': currentScroll + 1600,behavior: 'smooth'})
-	  }else{
-		 clearInterval(f1)
-	  }
-	},500);
-}else{
-	let f2 = setInterval(()=>{
-	 let dom = document.getElementById("mainView")
-	 const currentScroll = dom.scrollTop 
-	 const clientHeight = dom.clientHeight; 
-	 const scrollHeight = dom.scrollHeight; 
-	 if (scrollHeight + 50 > currentScroll + clientHeight) {
-		 dom.scrollTo({'left':0,'top': currentScroll - 1600,behavior: 'smooth'})
-	  }else{
-		 clearInterval(f2)
-	  }
-	},500);
-}
-`, arg)
+		rob.WebDriver.ExecuteScript(script, arg)
 		t := time.NewTicker(time.Second * time.Duration(wait))
 		<-t.C
 
@@ -152,8 +161,15 @@ if (document.getElementById("mainView").scrollTop == 0){
 				continue
 			}
 			source, _ := img.GetAttribute("src")
-			if source != "" {
+			match, _ := regexp.MatchString("pixel.gif", source)
+			if source != "" && match != true {
 				sourceImage.SourceData = append(sourceImage.SourceData, source)
+			} else {
+				sourceImage.SourceData = model.Images{}
+				if tryLimit%2 == 0 {
+					rob.WebDriver.Refresh()
+				}
+				break
 			}
 		}
 		if len(sourceImage.SourceData) > 0 {

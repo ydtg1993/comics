@@ -14,6 +14,7 @@ import (
 func DownImage(ext string) {
 	taskLimit := 5
 	for limit := 0; limit < taskLimit; limit++ {
+		common.StopSignal("图片下载任务挂起")
 		id, err := rd.LPop(common.SourceImageTASK)
 		if err != nil || id == "" {
 			return

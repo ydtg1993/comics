@@ -12,7 +12,7 @@ import (
 )
 
 func ImagePaw() {
-	rob := robot.GetRob([]int{2, 3, 4})
+	rob := robot.GetRob([]int{2, 3, 4, 5})
 	if rob == nil {
 		return
 	}
@@ -22,8 +22,9 @@ func ImagePaw() {
 		rob.Lock.Unlock()
 	}()
 
-	taskLimit := 30
+	taskLimit := 20
 	for limit := 0; limit < taskLimit; limit++ {
+		common.StopSignal("图片任务挂起")
 		id, err := rd.LPop(common.SourceChapterTASK)
 		if err != nil || id == "" {
 			return
@@ -34,9 +35,11 @@ func ImagePaw() {
 		}
 		rob.WebDriver.Get(sourceChapter.SourceUrl)
 		sourceImage := new(model.SourceImage)
+		sourceImage.Source = config.Spe.SourceId
+		sourceImage.ComicId = sourceChapter.ComicId
+		sourceImage.ChapterId = sourceChapter.Id
 		sourceImage.Images = model.Images{}
 		sourceImage.SourceData = model.Images{}
-		sourceImage.ChapterId = sourceChapter.Id
 
 		browserList(rob, sourceImage, sourceChapter)
 		if len(sourceImage.SourceData) == 0 {
@@ -49,8 +52,9 @@ func ImagePaw() {
 			rd.RPush(common.SourceChapterRetryTask, sourceChapter.Id)
 			continue
 		}
-		var exists bool
-		orm.Eloquent.Model(model.SourceImage{}).Select("id > 0").Where("chapter_id = ?", id).First(&exists)
+
+		record := new(model.SourceImage)
+		exists := record.Exists(sourceChapter.Id)
 		if exists == false {
 			err = orm.Eloquent.Create(&sourceImage).Error
 			if err != nil {
@@ -65,11 +69,10 @@ func ImagePaw() {
 				rd.RPush(common.SourceImageTASK, sourceImage.Id)
 			}
 		} else {
-			err = orm.Eloquent.Model(model.SourceImage{}).Where("chapter_id = ?", id).Updates(map[string]interface{}{
-				"images":      sourceImage.Images,
-				"source_data": sourceImage.SourceData,
-				"state":       sourceImage.State,
-			}).Error
+			record.Images = sourceImage.Images
+			record.SourceData = sourceImage.SourceData
+			record.State = sourceImage.State
+			err = orm.Eloquent.Save(record).Error
 			if err != nil {
 				msg := fmt.Sprintf("图片数据导入失败 source = %d comic_id = %d chapter_id = %d err = %s",
 					config.Spe.SourceId,

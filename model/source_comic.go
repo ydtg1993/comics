@@ -2,6 +2,7 @@ package model
 
 import (
 	"comics/global/orm"
+	"comics/tools/config"
 	"database/sql/driver"
 	"encoding/json"
 	"gorm.io/gorm"
@@ -64,4 +65,12 @@ func (t *Label) Scan(value interface{}) error {
 
 func (t Label) Value() (driver.Value, error) {
 	return json.Marshal(t)
+}
+
+func (ma *SourceComic) Exists(sourceId int) bool {
+	result := orm.Eloquent.Where("source = ? and source_id = ?", config.Spe.SourceId, sourceId).Limit(1).Find(&ma)
+	if result.Error == nil && result.RowsAffected == 1 {
+		return true
+	}
+	return false
 }

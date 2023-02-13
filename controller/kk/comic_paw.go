@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func ComicPaw() {
@@ -93,10 +94,12 @@ func category(kk common.Kind, sort int) {
 	total := tools.FindStringNumber(content.Get("total").String())
 	page := int(math.Ceil(float64(total) / float64(48)))
 	for {
-		if page < 1 || page > 5 {
+		if page < 1 || page > 10 {
 			break
 		}
 		paw(kk, sort, page)
+		t := time.NewTicker(time.Second * 5)
+		<-t.C
 		page--
 	}
 }
@@ -112,9 +115,7 @@ func paw(kk common.Kind, sort, page int) {
 	list := content.Get("hits.topicMessageList")
 	list.ForEach(func(key, value gjson.Result) bool {
 		id, _ := strconv.Atoi(value.Get("id").String())
-		var exists bool
-		orm.Eloquent.Model(model.SourceComic{}).Select("count(*) > 0").
-			Where("source = ? and source_id = ?", config.Spe.SourceId, id).Find(&exists)
+		exists := new(model.SourceComic).Exists(id)
 		if exists == true {
 			return true
 		}
