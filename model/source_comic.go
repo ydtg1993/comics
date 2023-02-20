@@ -12,27 +12,28 @@ import (
 type Label []string
 
 type SourceComic struct {
-	Id           int       `json:"id" gorm:"primarykey;->"`
-	Source       int       `json:"source"`
-	SourceId     int       `json:"source_id"`
-	SourceUrl    string    `json:"source_url"`
-	Cover        string    `json:"cover"`
-	Title        string    `json:"title"`
-	Author       string    `json:"Author"`
-	Label        Label     `json:"label" gorm:"type:json"`
-	Category     string    `json:"category"`
-	Region       string    `json:"region"`
-	ChapterCount int       `json:"chapter_count"`
-	ChapterPick  int       `json:"chapter_pick"`
-	Like         string    `json:"like"`
-	Popularity   string    `json:"popularity"`
-	IsFree       int       `json:"is_free"`
-	IsFinish     int       `json:"is_finish"`
-	Retry        int       `json:"retry"`
-	Description  string    `json:"description"`
-	SourceData   string    `json:"source_data"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	Id                  int       `json:"id" gorm:"primarykey;->"`
+	Source              int       `json:"source"`
+	SourceId            int       `json:"source_id"`
+	SourceUrl           string    `json:"source_url"`
+	Cover               string    `json:"cover"`
+	Title               string    `json:"title"`
+	Author              string    `json:"Author"`
+	Label               Label     `json:"label" gorm:"type:json"`
+	Category            string    `json:"category"`
+	Region              string    `json:"region"`
+	ChapterCount        int       `json:"chapter_count"`
+	ChapterPick         int       `json:"chapter_pick"`
+	Like                string    `json:"like"`
+	Popularity          string    `json:"popularity"`
+	IsFree              int       `json:"is_free"`
+	IsFinish            int       `json:"is_finish"`
+	Retry               int       `json:"retry"`
+	Description         string    `json:"description"`
+	SourceData          string    `json:"source_data"`
+	LastChapterUpdateAt time.Time `json:"last_chapter_update_at"`
+	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
 }
 
 /**

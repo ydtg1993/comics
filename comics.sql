@@ -376,4 +376,51 @@ CREATE TABLE `users`  (
   UNIQUE INDEX `users_email_unique`(`email`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
+DROP TABLE IF EXISTS `comic`;
+CREATE TABLE `comic` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `source_comic_id` int(11) NOT NULL COMMENT '审核-漫画id',
+  `source_info` json NOT NULL COMMENT '采集源信息',
+  `cover` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
+  `author` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '作者',
+  `label` json NOT NULL COMMENT '标签',
+  `category` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分类',
+  `region` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '地区',
+  `chapter_count` int(11) NOT NULL DEFAULT '0' COMMENT '章节数量',
+  `like` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '喜欢',
+  `popularity` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '人气热度',
+  `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
+  `is_finish` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0连载 1完结',
+  `description` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `comic_id` (`comic_id`) USING BTREE,
+  KEY `title` (`title`) USING HASH,
+  KEY `category` (`category`) USING HASH,
+  KEY `region` (`region`) USING HASH,
+  KEY `is_free` (`is_free`) USING BTREE,
+  KEY `is_finish` (`is_finish`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='漫画';
+
+DROP TABLE IF EXISTS `chapter`;
+CREATE TABLE `chapter` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `comic_id` int(11) NOT NULL COMMENT '漫画id',
+  `source_comic_id` int(11) NOT NULL COMMENT '审核-漫画id',
+  `source_info` json NOT NULL COMMENT '采集源信息',
+  `cover` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
+  `title` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
+  `sort` int(11) NOT NULL DEFAULT '0',
+  `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
+  `images` json NOT NULL,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `comic_id` (`comic_id`) USING BTREE,
+  KEY `is_free` (`is_free`) USING BTREE,
+  KEY `title` (`title`) USING HASH
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='章节';
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -27,7 +27,7 @@ func ImagePaw() {
 		rob.Lock.Unlock()
 	}()
 
-	taskLimit := 12
+	taskLimit := 10
 	for limit := 0; limit < taskLimit; limit++ {
 		common.StopSignal("图片任务挂起")
 		id, err := rd.LPop(common.SourceChapterTASK)
@@ -112,7 +112,7 @@ if (document.getElementById("mainView").scrollTop == 0){
 	 const clientHeight = dom.clientHeight; 
 	 const scrollHeight = dom.scrollHeight; 
 	 if (scrollHeight + 50 > currentScroll + clientHeight) {
-		 dom.scrollTo({'left':0,'top': currentScroll - 1600,behavior: 'smooth'})
+		 dom.scrollTo({'left':0,'top': currentScroll - 1400,behavior: 'smooth'})
 	  }else{
 		 clearInterval(f2)
 	  }
@@ -123,7 +123,7 @@ if (document.getElementById("mainView").scrollTop == 0){
 		imgContain, err := rob.WebDriver.FindElement(selenium.ByClassName, "comic-contain")
 		if err != nil {
 			if tryLimit > 3 {
-				if tryLimit == 5 {
+				if tryLimit == 6 {
 					msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %s",
 						config.Spe.SourceId,
 						sourceChapter.ComicId,
@@ -143,7 +143,7 @@ if (document.getElementById("mainView").scrollTop == 0){
 		if err == nil {
 			vhi, err := strconv.Atoi(tools.UnknowToString(vh))
 			if err == nil {
-				wait = int(math.Ceil(float64(vhi) / float64(2200)))
+				wait = int(math.Ceil(float64(vhi) / float64(2000)))
 			}
 		}
 		rob.WebDriver.ExecuteScript(script, arg)

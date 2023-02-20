@@ -11,18 +11,16 @@ import (
 	"time"
 )
 
-var TaskStepRecord = "task:step:record:"
-
 func TaskComic(source *SourceStrategy) {
 	t := time.NewTicker(time.Hour * 36)
 	defer t.Stop()
-	rd.RPush(TaskStepRecord, fmt.Sprintf("漫画-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+	rd.RPush(common.TaskStepRecord, fmt.Sprintf("漫画-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 	source.ComicPaw()
 
 	for {
 		<-t.C
-		rd.Delete(TaskStepRecord)
-		rd.RPush(TaskStepRecord, fmt.Sprintf("漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+		rd.Delete(common.TaskStepRecord)
+		rd.RPush(common.TaskStepRecord, fmt.Sprintf("漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 		source.ComicUpdate()
 	}
 }
@@ -35,7 +33,7 @@ func TaskChapter(source *SourceStrategy) {
 		<-t.C
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
-		rd.RPush(TaskStepRecord, fmt.Sprintf("章节-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+		rd.RPush(common.TaskStepRecord, fmt.Sprintf("章节-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 		for i := 0; i < threads; i++ {
 			go func() {
 				source.ChapterPaw()
@@ -51,7 +49,7 @@ func TaskChapterUpdate() {
 	defer t.Stop()
 	for {
 		<-t.C
-		rd.RPush(TaskStepRecord, fmt.Sprintf("连载漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+		rd.RPush(common.TaskStepRecord, fmt.Sprintf("连载漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
 
 		page := 0
 		limit := 500
@@ -69,15 +67,15 @@ func TaskChapterUpdate() {
 	}
 }
 
-func TaskImage(source *SourceStrategy) {
-	t := time.NewTicker(time.Minute * 30)
-	defer t.Stop()
-	threads := 4
+func TaskImage(source *SourceStrategy, doneImageSignal chan struct{}) {
+	threads := 3
 	for {
-		<-t.C
+		<-doneImageSignal
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
-		rd.RPush(TaskStepRecord, fmt.Sprintf("图片-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+		rd.Set(common.SourceImageCapture,
+			fmt.Sprintf("图片抓取 %s", time.Now().String()),
+			time.Hour*1)
 		for i := 0; i < threads; i++ {
 			go func() {
 				source.ImagePaw()
@@ -88,15 +86,14 @@ func TaskImage(source *SourceStrategy) {
 	}
 }
 
-func TaskDownImage() {
-	t := time.NewTicker(time.Minute * 1)
-	defer t.Stop()
-	threads := 5
+func TaskDownImage(doneImageSignal chan struct{}) {
+	threads := 6
 	for {
-		<-t.C
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
-		rd.RPush(TaskStepRecord, fmt.Sprintf("图片下载-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
+		rd.Set(common.SourceImageDownload,
+			fmt.Sprintf("图片下载 %s", time.Now().String()),
+			time.Hour*1)
 		for i := 0; i < threads; i++ {
 			go func() {
 				var ext string
@@ -108,7 +105,10 @@ func TaskDownImage() {
 				DownImage(ext)
 				wg.Done()
 			}()
+			t := time.NewTicker(time.Second * 40)
+			<-t.C
 		}
 		wg.Wait()
+		doneImageSignal <- struct{}{}
 	}
 }

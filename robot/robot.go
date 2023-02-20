@@ -35,7 +35,7 @@ func setRob(num int) {
 		}
 
 		r := &Robot{
-			Port: 19991 + len(Swarm),
+			Port: config.Spe.SourceId*5000 + 9991 + len(Swarm),
 		}
 		r.prepare("https://" + config.Spe.SourceUrl)
 		Swarm = append(Swarm, r)
@@ -63,7 +63,7 @@ func GetRob(keys []int) *Robot {
 }
 
 func ResetRob(Rob *Robot) {
-	for tryLimit := 0; tryLimit <= 7; tryLimit++ {
+	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
 		proxy := GetProxy()
 		args := []string{
 			"--headless",
@@ -94,18 +94,28 @@ func ResetRob(Rob *Robot) {
 			Args: args,
 		})
 		Rob.WebDriver.Close()
+		t := time.NewTicker(time.Second * 3)
+		<-t.C
 		wb, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", Rob.Port))
 		if err != nil {
-			panic(err.Error())
+			if Rob.Port > 60000 {
+				Rob.Port -= 3
+			} else {
+				Rob.Port += 10
+			}
+			if tryLimit == 9 {
+				panic(err.Error())
+			}
+			continue
 		}
+		Rob.WebDriver = wb
 		err = wb.Get("https://" + config.Spe.SourceUrl)
 		if err != nil {
-			if tryLimit == 7 {
+			if tryLimit == 9 {
 				wb.Close()
 				panic(err.Error())
 			}
 		} else {
-			Rob.WebDriver = wb
 			Rob.WebDriver.ResizeWindow("", 1400, 1200)
 			break
 		}

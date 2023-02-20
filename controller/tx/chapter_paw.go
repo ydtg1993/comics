@@ -17,14 +17,13 @@ import (
 func ChapterPaw() {
 	taskLimit := 50
 
-	bot := robot.GetColly()
 	for limit := 0; limit < taskLimit; limit++ {
 		common.StopSignal("章节任务挂起")
 		id, err := rd.LPop(common.SourceComicTASK)
 		if err != nil || id == "" {
 			return
 		}
-
+		bot := robot.GetColly()
 		sourceComic := new(model.SourceComic)
 		if orm.Eloquent.Where("id = ?", id).First(&sourceComic); sourceComic.Id == 0 {
 			continue
@@ -68,6 +67,7 @@ func ChapterPaw() {
 						rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 					} else {
 						rd.RPush(common.SourceChapterTASK, sourceChapter.Id)
+						sourceComic.LastChapterUpdateAt = time.Now()
 					}
 				}
 			})
@@ -90,17 +90,17 @@ func ChapterPaw() {
 			orm.Eloquent.Save(&sourceComic)
 		})
 
-		for i := 0; i < 3; i++ {
+		for i := 0; i <= 3; i++ {
 			err := bot.Visit(sourceComic.SourceUrl)
-			if err != nil && i == 3 {
+			if err != nil {
 				bot = robot.GetColly()
-				model.RecordFail(sourceComic.SourceUrl, "无法获取漫画详情 :"+sourceComic.SourceUrl, "漫画详情错误", 2)
+				if i == 3 {
+					model.RecordFail(sourceComic.SourceUrl, "无法获取漫画详情 :"+sourceComic.SourceUrl, "漫画详情错误", 2)
+					rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
+				}
 			} else {
 				break
 			}
 		}
-
-		t := time.NewTicker(time.Second * 2)
-		<-t.C
 	}
 }

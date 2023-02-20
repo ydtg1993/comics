@@ -119,7 +119,7 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 					sourceComic.Id, sourceChapter.SourceUrl,
 					sourceChapter.Title)
 				model.RecordFail(sourceChapter.SourceUrl, msg, "章节没有购买", 2)
-				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
+				//rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			} else {
 				msg := fmt.Sprintf("章节id没有查找到 source = %d comic_id = %d chapter_url = %s chapter_name = %s",
 					config.Spe.SourceId,
@@ -145,6 +145,7 @@ func chapterList(sourceComic *model.SourceComic, listElements []selenium.WebElem
 				rd.RPush(common.SourceComicRetryTask, sourceComic.Id)
 			} else {
 				rd.RPush(common.SourceChapterTASK, sourceChapter.Id)
+				sourceComic.LastChapterUpdateAt = time.Now()
 			}
 		}
 	}

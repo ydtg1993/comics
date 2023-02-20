@@ -132,10 +132,9 @@ func DownFile(sUrl, filepath, fileName, proxy string, cookies map[string]string)
 }
 
 func StopSignal(output string) {
-	signal := "shutdown"
-	count, err := rd.LLen("shutdown")
+	count, err := rd.LLen(StopRobotSignal)
 	if err == nil && count > 0 {
-		rd.RPush(signal, output)
+		rd.RPush(StopRobotSignal, output)
 		time.Sleep(time.Hour * 24)
 	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"comics/common"
 	"comics/controller"
 	"comics/robot"
 	"comics/tools/config"
@@ -11,7 +12,6 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"os"
 	"runtime"
-	"strconv"
 )
 
 var Source *controller.SourceStrategy
@@ -19,14 +19,17 @@ var Source *controller.SourceStrategy
 func main() {
 	Setup()
 	fmt.Println(config.Spe.SourceUrl)
+
+	doneImageSignal := make(chan struct{})
+
 	go controller.TaskComic(Source)
 
 	go controller.TaskChapter(Source)
 	go controller.TaskChapterUpdate()
 
-	go controller.TaskImage(Source)
+	go controller.TaskImage(Source, doneImageSignal)
 
-	controller.TaskDownImage()
+	controller.TaskDownImage(doneImageSignal)
 }
 
 func Setup() {
@@ -59,8 +62,8 @@ func Setup() {
 	if err != nil {
 		panic(err)
 	}
-	controller.TaskStepRecord += strconv.Itoa(config.Spe.SourceId)
-	rd.Delete(controller.TaskStepRecord)
+	rd.Delete(common.TaskStepRecord)
+	rd.Delete(common.StopRobotSignal)
 
 	if config.Spe.SeleniumPath != "" {
 		go robot.SetUp()

@@ -94,7 +94,7 @@ func category(kk common.Kind, sort int) {
 	total := tools.FindStringNumber(content.Get("total").String())
 	page := int(math.Ceil(float64(total) / float64(48)))
 	for {
-		if page < 1 || page > 10 {
+		if page < 1 {
 			break
 		}
 		paw(kk, sort, page)
@@ -138,9 +138,11 @@ func paw(kk common.Kind, sort, page int) {
 		}
 		sourceComic.SourceUrl = "https://" + config.Spe.SourceUrl + "/web/topic/" + value.Get("id").String()
 		sourceComic.Title = value.Get("title").String()
+		sourceComic.Label = model.Label{}
 		for _, v := range value.Get("category").Array() {
 			sourceComic.Label = append(sourceComic.Label, v.Str)
 		}
+		sourceComic.LastChapterUpdateAt = time.Now().AddDate(-1, 0, 0)
 		sourceComic.Category = kk.Tag.Name
 		sourceComic.Region = kk.Region.Name
 		sourceComic.Author = value.Get("author_name").String()

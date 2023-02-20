@@ -9,10 +9,11 @@ import (
 	"comics/tools/rd"
 	"fmt"
 	"github.com/tebeka/selenium"
+	"time"
 )
 
 func ImagePaw() {
-	rob := robot.GetRob([]int{2, 3, 4, 5})
+	rob := robot.GetRob([]int{2, 3, 4})
 	if rob == nil {
 		return
 	}
@@ -22,7 +23,7 @@ func ImagePaw() {
 		rob.Lock.Unlock()
 	}()
 
-	taskLimit := 20
+	taskLimit := 15
 	for limit := 0; limit < taskLimit; limit++ {
 		common.StopSignal("图片任务挂起")
 		id, err := rd.LPop(common.SourceChapterTASK)
@@ -92,6 +93,8 @@ func browserList(rob *robot.Robot, sourceImage *model.SourceImage, sourceChapter
 	for tryLimit := 0; tryLimit <= 5; tryLimit++ {
 		var arg []interface{}
 		rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
+		t := time.NewTicker(time.Second * 3)
+		<-t.C
 		imgList, err := rob.WebDriver.FindElements(selenium.ByClassName, "img-box")
 		if err != nil {
 			if tryLimit > 3 {
