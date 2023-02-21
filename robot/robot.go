@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/tebeka/selenium"
 	"github.com/tebeka/selenium/chrome"
+	"math/rand"
 	"sync"
 	"time"
 )
@@ -63,70 +64,29 @@ func GetRob(keys []int) *Robot {
 }
 
 func ResetRob(Rob *Robot) {
-	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
-		proxy := GetProxy()
-		args := []string{
-			"--headless",
-			"--no-sandbox",
-			"--disable-dev-shm-usage",
-			"--ignore-certificate-errors",
-			"--ignore-ssl-errors",
-			"--user-agent=" + config.Spe.UserAgent,
-		}
-		if config.Spe.AppDebug == true {
-			args = []string{
-				"--ignore-certificate-errors",
-				"--ignore-ssl-errors",
-				"--user-agent=" + config.Spe.UserAgent,
-			}
-		}
-		if proxy != "" {
-			_ = append(args, proxy)
-		}
-		caps := selenium.Capabilities{
-			"browserName": "chrome",
-		}
-		caps.AddChrome(chrome.Capabilities{
-			Prefs: map[string]interface{}{
-				"profile.managed_default_content_settings.images": 2,
-			},
-			Path: "",
-			Args: args,
-		})
-		Rob.WebDriver.Close()
-		t := time.NewTicker(time.Second * 3)
-		<-t.C
-		wb, err := selenium.NewRemote(caps, fmt.Sprintf("http://localhost:%d/wd/hub", Rob.Port))
-		if err != nil {
-			if Rob.Port > 60000 {
-				Rob.Port -= 3
-			} else {
-				Rob.Port += 10
-			}
-			if tryLimit == 9 {
-				panic(err.Error())
-			}
-			continue
-		}
-		Rob.WebDriver = wb
-		err = wb.Get("https://" + config.Spe.SourceUrl)
-		if err != nil {
-			if tryLimit == 9 {
-				wb.Close()
-				panic(err.Error())
-			}
-		} else {
-			Rob.WebDriver.ResizeWindow("", 1400, 1200)
-			break
-		}
+	Rob.Port += 3
+	if Rob.Port > 50000 {
+		Rob.Port = Rob.Port - (rand.Intn(8)+1)*3000 - rand.Intn(999)
 	}
+	Rob.Service.Stop()
+	Rob.WebDriver.Close()
+	Rob.prepare("https://" + config.Spe.SourceUrl)
 }
 
 func (Robot *Robot) prepare(url string) {
-	opts := []selenium.ServiceOption{}
+	opts := []selenium.ServiceOption{
+		selenium.ChromeDriver(config.Spe.SeleniumPath),
+	}
 	service, err := selenium.NewChromeDriverService(config.Spe.SeleniumPath, Robot.Port, opts...)
 	if nil != err {
-		panic(err.Error())
+		Robot.Port += 5
+		if Robot.Port > 50000 {
+			Robot.Port = Robot.Port - (rand.Intn(8)+1)*3000 - rand.Intn(999)
+		}
+		service, err = selenium.NewChromeDriverService(config.Spe.SeleniumPath, Robot.Port, opts...)
+		if nil != err {
+			panic(err.Error())
+		}
 	}
 	Robot.Service = service
 
