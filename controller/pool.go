@@ -105,10 +105,10 @@ func TaskDownImage(doneImageSignal chan struct{}) {
 				DownImage(ext)
 				wg.Done()
 			}()
-			t := time.NewTicker(time.Second * 30)
-			<-t.C
 		}
 		wg.Wait()
 		doneImageSignal <- struct{}{}
+		t := time.NewTicker(time.Minute * 2)
+		<-t.C
 	}
 }

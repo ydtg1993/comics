@@ -68,8 +68,10 @@ func ResetRob(Rob *Robot) {
 	if Rob.Port > 50000 {
 		Rob.Port = Rob.Port - (rand.Intn(8)+1)*3000 - rand.Intn(999)
 	}
+	Rob.WebDriver.Quit()
 	Rob.Service.Stop()
-	Rob.WebDriver.Close()
+	t := time.NewTicker(time.Second * 10)
+	<-t.C
 	Rob.prepare("https://" + config.Spe.SourceUrl)
 }
 
@@ -95,7 +97,7 @@ func (Robot *Robot) prepare(url string) {
 		args := []string{
 			"--headless",
 			"--no-sandbox",
-			"--disable-dev-shm-usage",
+			//"--disable-dev-shm-usage",
 			"--ignore-certificate-errors",
 			"--ignore-ssl-errors",
 			"--user-agent=" + config.Spe.UserAgent,
@@ -108,7 +110,7 @@ func (Robot *Robot) prepare(url string) {
 			}
 		}
 		if config.Spe.AppDebug == false {
-			args = append(args, proxy)
+			args = append(args, "--proxy-server="+proxy)
 		}
 
 		caps := selenium.Capabilities{
@@ -125,13 +127,13 @@ func (Robot *Robot) prepare(url string) {
 		if err != nil {
 			panic(err.Error())
 		}
-		wb.SetImplicitWaitTimeout(time.Second * 10)
-		wb.SetPageLoadTimeout(time.Second * 20)
+		wb.SetImplicitWaitTimeout(time.Second * 60)
+		wb.SetPageLoadTimeout(time.Second * 60)
 		wb.ResizeWindow("", 1400, 1200)
 		err = wb.Get(url)
 		if err != nil {
 			if tryLimit == 7 {
-				wb.Close()
+				wb.Quit()
 				service.Stop()
 				panic(err.Error())
 			}

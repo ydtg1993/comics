@@ -23,7 +23,7 @@ func ImagePaw() {
 		rob.Lock.Unlock()
 	}()
 
-	taskLimit := 15
+	taskLimit := 5
 	for limit := 0; limit < taskLimit; limit++ {
 		common.StopSignal("图片任务挂起")
 		id, err := rd.LPop(common.SourceChapterTASK)
@@ -93,7 +93,7 @@ func browserList(rob *robot.Robot, sourceImage *model.SourceImage, sourceChapter
 	for tryLimit := 0; tryLimit <= 5; tryLimit++ {
 		var arg []interface{}
 		rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
-		t := time.NewTicker(time.Second * 3)
+		t := time.NewTicker(time.Second * 5)
 		<-t.C
 		imgList, err := rob.WebDriver.FindElements(selenium.ByClassName, "img-box")
 		if err != nil {

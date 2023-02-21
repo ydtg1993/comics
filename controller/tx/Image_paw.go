@@ -27,7 +27,7 @@ func ImagePaw() {
 		rob.Lock.Unlock()
 	}()
 
-	taskLimit := 10
+	taskLimit := 5
 	for limit := 0; limit < taskLimit; limit++ {
 		common.StopSignal("图片任务挂起")
 		id, err := rd.LPop(common.SourceChapterTASK)
@@ -144,6 +144,9 @@ if (document.getElementById("mainView").scrollTop == 0){
 			vhi, err := strconv.Atoi(tools.UnknowToString(vh))
 			if err == nil {
 				wait = int(math.Ceil(float64(vhi) / float64(2000)))
+				if wait <= 0 {
+					wait = 30
+				}
 			}
 		}
 		rob.WebDriver.ExecuteScript(script, arg)
