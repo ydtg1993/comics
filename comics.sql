@@ -292,72 +292,75 @@ CREATE TABLE `password_resets`  (
 -- Table structure for source_chapter
 -- ----------------------------
 DROP TABLE IF EXISTS `source_chapter`;
-CREATE TABLE `source_chapter`  (
+CREATE TABLE `source_chapter` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `comic_id` int(11) NOT NULL,
-  `source` tinyint(1) NOT NULL DEFAULT 1 COMMENT '采集源 1:快看 2:腾讯',
+  `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
   `source_chapter_id` int(11) NOT NULL COMMENT '源章节id',
-  `source_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
-  `cover` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
-  `title` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
-  `sort` int(11) NOT NULL DEFAULT 0,
-  `is_free` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0免费 1收费',
-  `source_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `source_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
+  `cover` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
+  `title` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
+  `sort` int(11) NOT NULL DEFAULT '0',
+  `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
+  `source_data` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未审核 1通过',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `source`(`source`, `comic_id`, `source_url`) USING BTREE,
-  INDEX `comic_id`(`comic_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '采集-漫画章节' ROW_FORMAT = Dynamic;
+  UNIQUE KEY `source` (`source`,`comic_id`,`source_url`) USING BTREE,
+  KEY `comic_id` (`comic_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画章节';
 
 -- ----------------------------
 -- Table structure for source_comic
 -- ----------------------------
 DROP TABLE IF EXISTS `source_comic`;
-CREATE TABLE `source_comic`  (
+CREATE TABLE `source_comic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `source` tinyint(1) NOT NULL DEFAULT 1 COMMENT '采集源 1:快看 2:腾讯',
+  `source` tinyint(1) NOT NULL DEFAULT '1' COMMENT '采集源 1:快看 2:腾讯',
   `source_id` int(11) NOT NULL COMMENT '源漫画id',
-  `source_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
-  `cover` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
-  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
-  `author` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '作者',
+  `source_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '源url',
+  `cover` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
+  `author` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '作者',
   `label` json NOT NULL COMMENT '标签',
-  `category` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分类',
-  `region` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '地区',
-  `chapter_count` int(11) NOT NULL DEFAULT 0 COMMENT '章节数量',
-  `like` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '喜欢',
-  `popularity` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '人气热度',
-  `is_free` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0免费 1收费',
-  `is_finish` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0连载 1完结',
-  `description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
-  `source_data` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '源数据',
-  `chapter_pick` int(11) NOT NULL DEFAULT 0 COMMENT '章节拨片',
-  `retry` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0默认 1重抓',
-  `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `category` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '分类',
+  `region` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '地区',
+  `chapter_count` int(11) NOT NULL DEFAULT '0' COMMENT '章节数量',
+  `like` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '喜欢',
+  `popularity` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0' COMMENT '人气热度',
+  `is_free` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0免费 1收费',
+  `is_finish` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0连载 1完结',
+  `description` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '描述',
+  `source_data` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '源数据',
+  `chapter_pick` int(11) NOT NULL DEFAULT '0' COMMENT '章节拨片',
+  `retry` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0默认 1重抓',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '0未审核 1通过',
+  `last_chapter_update_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最新章节更新时间',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `source_id`(`source`, `source_id`) USING BTREE,
-  UNIQUE INDEX `source_uri`(`source_url`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '采集-漫画' ROW_FORMAT = Dynamic;
+  UNIQUE KEY `source_id` (`source`,`source_id`) USING BTREE,
+  UNIQUE KEY `source_uri` (`source_url`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='采集-漫画';
 
 -- ----------------------------
 -- Table structure for source_image
 -- ----------------------------
 DROP TABLE IF EXISTS `source_image`;
-CREATE TABLE `source_image`  (
+CREATE TABLE `source_image` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `source` tinyint(1) NULL DEFAULT 0 COMMENT '采集源 1:快看 2:腾讯',
-  `comic_id` int(11) NOT NULL DEFAULT 0,
+  `source` tinyint(1) DEFAULT '0' COMMENT '采集源 1:快看 2:腾讯',
+  `comic_id` int(11) NOT NULL DEFAULT '0',
   `chapter_id` int(11) NOT NULL,
   `images` json NOT NULL,
   `source_data` json NOT NULL,
-  `state` tinyint(1) NOT NULL DEFAULT 0 COMMENT '资源获取:0未开始 1已完成',
-  `updated_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `state` tinyint(1) NOT NULL DEFAULT '0' COMMENT '资源获取:0未开始 1已完成',
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `chapter_id`(`chapter_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
+  UNIQUE KEY `chapter_id` (`chapter_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
 -- Table structure for users
@@ -379,8 +382,7 @@ CREATE TABLE `users`  (
 DROP TABLE IF EXISTS `comic`;
 CREATE TABLE `comic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `source_comic_id` int(11) NOT NULL COMMENT '审核-漫画id',
-  `source_info` json NOT NULL COMMENT '采集源信息',
+  `source_comic_id` int(11) NOT NULL COMMENT '采集-漫画id',
   `cover` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
   `author` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '作者',
@@ -396,20 +398,21 @@ CREATE TABLE `comic` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `comic_id` (`comic_id`) USING BTREE,
+  UNIQUE KEY `comic_id` (`source_comic_id`) USING BTREE,
   KEY `title` (`title`) USING HASH,
   KEY `category` (`category`) USING HASH,
   KEY `region` (`region`) USING HASH,
   KEY `is_free` (`is_free`) USING BTREE,
   KEY `is_finish` (`is_finish`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='漫画';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='漫画';
 
 DROP TABLE IF EXISTS `chapter`;
 CREATE TABLE `chapter` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `comic_id` int(11) NOT NULL COMMENT '漫画id',
-  `source_comic_id` int(11) NOT NULL COMMENT '审核-漫画id',
-  `source_info` json NOT NULL COMMENT '采集源信息',
+  `source_comic_id` int(11) NOT NULL COMMENT '采集-漫画id',
+  `source_chapter_id` int(11) NOT NULL COMMENT '采集-章节id',
+  `source_image_id` int(11) NOT NULL COMMENT '采集-图片id',
   `cover` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '封面',
   `title` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '标题',
   `sort` int(11) NOT NULL DEFAULT '0',
@@ -418,9 +421,11 @@ CREATE TABLE `chapter` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `source_chapter_id` (`source_chapter_id`),
+  UNIQUE KEY `source_image_id` (`source_image_id`),
   KEY `comic_id` (`comic_id`) USING BTREE,
   KEY `is_free` (`is_free`) USING BTREE,
   KEY `title` (`title`) USING HASH
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='章节';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='章节';
 
 SET FOREIGN_KEY_CHECKS = 1;
