@@ -23,7 +23,7 @@ func ImagePaw() {
 		rob.Lock.Unlock()
 	}()
 
-	taskLimit := 5
+	taskLimit := 3
 	for limit := 0; limit < taskLimit; limit++ {
 		common.StopSignal("图片任务挂起")
 		id, err := rd.LPop(common.SourceChapterTASK)
@@ -90,15 +90,15 @@ func ImagePaw() {
 }
 
 func browserList(rob *robot.Robot, sourceImage *model.SourceImage, sourceChapter *model.SourceChapter) {
-	for tryLimit := 0; tryLimit <= 5; tryLimit++ {
+	for tryLimit := 0; tryLimit <= 9; tryLimit++ {
 		var arg []interface{}
-		rob.WebDriver.ExecuteScript("window.scrollBy(0,1000000)", arg)
-		t := time.NewTicker(time.Second * 5)
+		rob.WebDriver.ExecuteScript("window.scrollTo({top: 10000000,behavior: 'smooth'});", arg)
+		t := time.NewTicker(time.Second * 7)
 		<-t.C
 		imgList, err := rob.WebDriver.FindElements(selenium.ByClassName, "img-box")
 		if err != nil {
-			if tryLimit > 3 {
-				if tryLimit == 5 {
+			if tryLimit > 7 {
+				if tryLimit == 9 {
 					msg := fmt.Sprintf("未找到图片列表: source = %d comic_id = %d chapter_url = %s err = %s",
 						config.Spe.SourceId,
 						sourceChapter.ComicId,
@@ -111,6 +111,7 @@ func browserList(rob *robot.Robot, sourceImage *model.SourceImage, sourceChapter
 				robot.ResetRob(rob)
 				rob.WebDriver.Get(sourceChapter.SourceUrl)
 			}
+			rob.WebDriver.Refresh()
 			continue
 		}
 		for _, img := range imgList {

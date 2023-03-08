@@ -21,7 +21,7 @@ func TaskComic(source *SourceStrategy) {
 		<-t.C
 		rd.Delete(common.TaskStepRecord)
 		rd.RPush(common.TaskStepRecord, fmt.Sprintf("漫画更新-进程开始 %s %s", config.Spe.SourceUrl, time.Now().String()))
-		source.ComicUpdate()
+		//source.ComicUpdate()
 	}
 }
 
@@ -67,10 +67,9 @@ func TaskChapterUpdate() {
 	}
 }
 
-func TaskImage(source *SourceStrategy, doneImageSignal chan struct{}) {
+func TaskImage(source *SourceStrategy) {
 	threads := 3
 	for {
-		<-doneImageSignal
 		wg := sync.WaitGroup{}
 		wg.Add(threads)
 		rd.Set(common.SourceImageCapture,
@@ -83,14 +82,9 @@ func TaskImage(source *SourceStrategy, doneImageSignal chan struct{}) {
 			}()
 		}
 		wg.Wait()
-	}
-}
 
-func TaskDownImage(doneImageSignal chan struct{}) {
-	threads := 6
-	for {
-		wg := sync.WaitGroup{}
-		wg.Add(threads)
+		wg2 := sync.WaitGroup{}
+		wg2.Add(threads)
 		rd.Set(common.SourceImageDownload,
 			fmt.Sprintf("图片下载 %s", time.Now().String()),
 			time.Hour*1)
@@ -103,12 +97,9 @@ func TaskDownImage(doneImageSignal chan struct{}) {
 					ext = "jpg"
 				}
 				DownImage(ext)
-				wg.Done()
+				wg2.Done()
 			}()
 		}
-		wg.Wait()
-		doneImageSignal <- struct{}{}
-		t := time.NewTicker(time.Minute * 2)
-		<-t.C
+		wg2.Wait()
 	}
 }
